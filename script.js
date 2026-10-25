@@ -24,13 +24,10 @@ document.querySelectorAll("[data-copy]").forEach((button) => {
 });
 
 const shots = [
-  ["assets/screenshots/01.png", "Home — AMAN OS"],
-  ["assets/screenshots/02.png", "Chat with sources — AMAN OS"],
-  ["assets/screenshots/03.png", "Projects — AMAN OS"],
-  ["assets/screenshots/04.png", "Tasks — AMAN OS"],
-  ["assets/screenshots/05.png", "Agents — AMAN OS"],
-  ["assets/screenshots/06.png", "Settings — AMAN OS"],
-  ["assets/screenshots/07.png", "Web search with source cards — AMAN OS"],
+  ["assets/screenshots/01.png", "Home — AMAN Search"],
+  ["assets/screenshots/02.png", "Chat with sources — AMAN Search"],
+  ["assets/screenshots/03.png", "Projects — AMAN Search"],
+  ["assets/screenshots/04.png", "Tasks — AMAN Search"],
 ];
 
 const dialog = document.getElementById("shot-dialog");

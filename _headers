@@ -5,9 +5,9 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=()
   Cross-Origin-Opener-Policy: same-origin
 
-/apps/aman-os.apk
+/apps/aman-search.apk
   Content-Type: application/vnd.android.package-archive
-  Content-Disposition: attachment; filename="AMAN-OS-v1.0.apk"
+  Content-Disposition: attachment; filename="AMAN-Search-v1.0.apk"
 
 /assets/*
   Cache-Control: public, max-age=604800
