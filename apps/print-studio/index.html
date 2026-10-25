@@ -251,7 +251,7 @@ input:focus,select:focus{border-color:var(--accent)}
           </div>
           <div class="strip" id="strip"></div>
           <div style="color:var(--sub);font-size:11px;margin-top:6px" id="stripHint">Ek saath kai files add kar sakte ho — thumbnail pe click karke select karo.</div>
-          <div style="color:var(--sub);font-size:11px;margin-top:6px">ya file sheet pe drag-drop karo, aur <b style="color:var(--muted)">Ctrl+V</b> se screenshot paste karo. <b style="color:var(--muted)">PDF direct chalta hai</b> (Aadhaar, PAN, marksheet, koi bhi) — multi-page PDF me page badal sakte ho. Locked PDF maange to password daalo; e-Aadhaar ka password = naam ke pehle 4 letters CAPITAL + birth year (jaise <b style="color:var(--muted)">AMANKumar2008</b> → <b style="color:var(--muted)">AMAN2008</b>).</div>
+          <div style="color:var(--sub);font-size:11px;margin-top:6px">ya file sheet pe drag-drop karo, aur <b style="color:var(--muted)">Ctrl+V</b> se screenshot paste karo. <b style="color:var(--muted)">PDF direct chalta hai</b> (Aadhaar, PAN, marksheet, koi bhi) — multi-page PDF me page badal sakte ho. Locked PDF maange to password daalo; e-Aadhaar ka password = naam ke pehle 4 letters CAPITAL + birth year (jaise <b style="color:var(--muted)">RAHULKumar2008</b> → <b style="color:var(--muted)">RAHUL2008</b>).</div>
 
           <div id="pdfBox" style="display:none">
             <div class="row" style="margin-top:9px"><label>PDF page</label>
@@ -648,7 +648,7 @@ function pdfPassword(cb, reason) {
   if (PDF.pwTries > 3) { cb(false); return; }
   const tip = reason === "wrongPassword"
     ? "Galat password. Dobara daalo:"
-    : "Ye PDF locked hai. Password daalo:\n(e-Aadhaar = naam ke pehle 4 letters CAPITAL + birth year, jaise AMAN2008)";
+    : "Ye PDF locked hai. Password daalo:\n(e-Aadhaar = naam ke pehle 4 letters CAPITAL + birth year, jaise RAHUL2008)";
   const t0 = Date.now();
   const v = window.prompt(tip, "");
   pwTime += Date.now() - t0;

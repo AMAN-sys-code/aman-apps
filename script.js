@@ -24,10 +24,10 @@ document.querySelectorAll("[data-copy]").forEach((button) => {
 });
 
 const shots = [
-  ["assets/screenshots/01.png", "Home — AMAN Search"],
-  ["assets/screenshots/02.png", "Chat with sources — AMAN Search"],
-  ["assets/screenshots/03.png", "Projects — AMAN Search"],
-  ["assets/screenshots/04.png", "Tasks — AMAN Search"],
+  ["assets/screenshots/01.png", "Home — Trove"],
+  ["assets/screenshots/02.png", "Chat with sources — Trove"],
+  ["assets/screenshots/03.png", "Projects — Trove"],
+  ["assets/screenshots/04.png", "Tasks — Trove"],
 ];
 
 const dialog = document.getElementById("shot-dialog");
