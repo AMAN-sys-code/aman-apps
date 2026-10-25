@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#08101f">
+<title>Computer kaise kaam karta hai?</title>
+<link rel="icon" href="../../assets/aman-mark.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:dark;--bg:#08101f;--panel:#101b30;--line:#273753;--muted:#a6b5cf;--cyan:#69e5ff;--gold:#ffd166;--pink:#ff83b7;--green:#8df0bb}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#19345b 0,transparent 55%),var(--bg);color:#f4f7ff;font:16px/1.5 system-ui,-apple-system,"Noto Sans Devanagari",sans-serif;min-height:100vh}
+main{width:min(980px,100%);margin:auto;padding:26px 18px 42px}header{text-align:center;margin:4px auto 24px}h1{font-size:clamp(27px,6vw,43px);line-height:1.2;margin:0 0 8px;letter-spacing:-.03em}header p{color:var(--muted);margin:0}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;margin-bottom:9px}
+.board{border:1px solid var(--line);background:#0b1425d9;border-radius:24px;padding:clamp(14px,3vw,26px);box-shadow:0 25px 80px #0005}.flow{display:grid;grid-template-columns:1fr 35px 1fr 35px 1fr 35px 1fr;align-items:center;gap:5px}.node{min-height:154px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#16233a,#0d1729);padding:15px 9px;text-align:center;transition:.35s}.node.active{border-color:var(--cyan);box-shadow:0 0 0 2px #69e5ff30,0 0 32px #69e5ff22;transform:translateY(-4px)}.icon{font-size:34px;line-height:1.2;margin:8px 0}.node h2{font-size:16px;margin:4px 0}.node small{color:var(--muted);font-size:12px}.arrow{color:#5b6d8a;text-align:center;font-size:24px}.arrow.lit{color:var(--cyan);text-shadow:0 0 14px var(--cyan)}
+.packet{position:relative;height:42px;margin:9px 4% 2px;display:flex;align-items:center}.track{height:2px;background:#263653;width:100%}.dot{position:absolute;left:0;width:15px;height:15px;border-radius:50%;background:var(--cyan);box-shadow:0 0 16px var(--cyan);opacity:0;transform:translateX(-50%)}.packet.go .dot{opacity:1;animation:travel 2.2s ease-in-out infinite}.packet.go .track{background:linear-gradient(90deg,#263653,var(--cyan),#263653);background-size:200% 100%;animation:shine 2.2s linear infinite}@keyframes travel{0%{left:0}100%{left:100%}}@keyframes shine{to{background-position:200% 0}}
+.status{margin:12px auto 0;min-height:96px;display:flex;align-items:center;gap:15px;border:1px solid var(--line);border-radius:16px;background:#0c1729;padding:16px}.statusIcon{font-size:28px;flex:0 0 auto}.status strong{display:block;color:var(--cyan);font-size:16px;margin-bottom:3px}.status p{margin:0;color:#d5def0}.controls{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:18px 0 8px}button{font:inherit;color:#eff8ff;background:#172743;border:1px solid #354a6b;border-radius:12px;padding:11px 16px;cursor:pointer;font-weight:700;transition:.2s}button:hover{border-color:var(--cyan);transform:translateY(-1px)}button.primary{background:var(--cyan);border-color:var(--cyan);color:#06121e}button:focus-visible{outline:3px solid #ffd166;outline-offset:3px}.progress{height:4px;border-radius:4px;background:#1a2942;overflow:hidden;margin:15px 4px 0}.bar{height:100%;width:0;background:var(--cyan);transition:width .4s}.foot{color:var(--muted);font-size:13px;text-align:center;margin:20px 5px 0}.foot b{color:#e7edfa}
+@media(max-width:650px){main{padding:20px 12px 30px}.board{border-radius:19px}.flow{display:flex;flex-direction:column;gap:6px}.node{width:100%;min-height:120px}.arrow{font-size:18px;transform:rotate(90deg);line-height:1}.packet{margin-top:12px}.status{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main>
+<header><div class="eyebrow">Chhota sa animated lesson</div><h1>Computer kaise kaam karta hai?</h1><p>Ek sawaal andar jaata hai, jawab screen par aata hai. Beech mein kya hota hai?</p></header>
+<section class="board" aria-label="Computer ke andar data ka safar">
+<div class="flow" id="flow">
+<article class="node" id="n0"><div class="icon">⌨️</div><h2>Input</h2><small>Aapka sawaal</small></article><div class="arrow" id="a0">➜</div>
+<article class="node" id="n1"><div class="icon">🧠</div><h2>RAM</h2><small>Kaam ki cheezein yaad</small></article><div class="arrow" id="a1">➜</div>
+<article class="node" id="n2"><div class="icon">⚙️</div><h2>CPU</h2><small>Hisab aur faisla</small></article><div class="arrow" id="a2">➜</div>
+<article class="node" id="n3"><div class="icon">🖥️</div><h2>Output</h2><small>Jawab aapko dikhe</small></article>
+</div>
+<div class="packet" id="packet"><div class="track"></div><div class="dot"></div></div>
+<div class="status" aria-live="polite"><div class="statusIcon" id="statusIcon">✨</div><div><strong id="title">Chalo, shuru karein!</strong><p id="description">“2 + 3 kitna hota hai?” — Play dabao aur data ka safar dekho.</p></div></div>
+<div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+<div class="controls"><button class="primary" id="play">▶ Chalao</button><button id="next">Agla step →</button><button id="reset">↺ Phir se</button></div>
+<p class="foot"><b>Yaad rakho:</b> Input deta hai, RAM sambhaalti hai, CPU process karta hai, output dikhata hai. Bijli band ho to RAM ka data mit jaata hai.</p>
+</section>
+</main>
+<script>
+const steps=[
+ {title:"1. Aap input dete ho",description:"Keyboard se “2 + 3” likha. Computer is input ko numbers aur instructions ke roop mein samajhta hai.",icon:"⌨️",node:0},
+ {title:"2. RAM kaam sambhaalti hai",description:"Sawaal aur zaroori program RAM mein temporarily rakhe jaate hain, taaki CPU un tak jaldi pahunch sake.",icon:"🧠",node:1},
+ {title:"3. CPU hisaab karta hai",description:"CPU instruction padhta hai, samajhta hai aur execute karta hai: 2 + 3 = 5. Ise computer ka dimaag keh sakte hain.",icon:"⚙️",node:2},
+ {title:"4. Jawab screen par aata hai",description:"Nateeja RAM se display tak jaata hai. Screen par “5” dikhta hai—computer ne kaam poora kar diya!",icon:"🖥️",node:3}
+];let step=-1,timer=null;
+const title=document.getElementById("title"),description=document.getElementById("description"),statusIcon=document.getElementById("statusIcon"),bar=document.getElementById("bar"),packet=document.getElementById("packet"),play=document.getElementById("play");
+function show(i){step=(i+steps.length)%steps.length;const s=steps[step];title.textContent=s.title;description.textContent=s.description;statusIcon.textContent=s.icon;bar.style.width=((step+1)*25)+"%";document.querySelectorAll(".node").forEach((el,j)=>el.classList.toggle("active",j===s.node));document.querySelectorAll(".arrow").forEach((el,j)=>el.classList.toggle("lit",j<step));packet.classList.add("go");}
+function stop(){if(timer){clearInterval(timer);timer=null}play.textContent="▶ Chalao";packet.classList.remove("go")}
+function advance(){show(step+1);if(step===steps.length-1)stop()}
+play.addEventListener("click",()=>{if(timer){stop();return}if(step===steps.length-1)step=-1;advance();play.textContent="⏸ Roko";timer=setInterval(advance,2900)});
+document.getElementById("next").addEventListener("click",()=>{stop();advance()});
+document.getElementById("reset").addEventListener("click",()=>{stop();step=-1;title.textContent="Chalo, shuru karein!";description.textContent="“2 + 3 kitna hota hai?” — Play dabao aur data ka safar dekho.";statusIcon.textContent="✨";bar.style.width="0";document.querySelectorAll(".node,.arrow").forEach(el=>el.classList.remove("active","lit"))});
+</script>
+</body>
+</html>

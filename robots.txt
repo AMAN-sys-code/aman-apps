@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aman-sys-code.github.io/aman-apps/sitemap.xml

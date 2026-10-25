@@ -1,0 +1,2005 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2348dfd8'/><text x='16' y='23' font-family='Arial,sans-serif' font-size='19' font-weight='700' text-anchor='middle' fill='%2306121f'>P</text></svg>">
+<title>Print Studio — exact size photo &amp; document printing</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#0a1120;--panel:#0f1a2c;--panel2:#0c1524;--line:#22344d;--line2:#2d4361;
+  --text:#e9f2fc;--muted:#93a8c2;--sub:#6f87a3;
+  --accent:#48dfd8;--accent2:#7799ff;--warn:#e0b36a;--danger:#ff8a80;--ok:#72e6ad;
+}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:13px/1.55 system-ui,"Segoe UI",Roboto,Arial,sans-serif;overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+.app{display:flex;flex-direction:column;height:100%}
+
+.topbar{display:flex;align-items:center;gap:14px;padding:9px 14px;background:linear-gradient(180deg,#12233a,#0d1829);border-bottom:1px solid var(--line);flex:0 0 auto}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.3px}
+.brand .dot{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#06121f;font-size:12px;font-weight:800}
+.brand small{display:block;font-weight:400;color:var(--muted);font-size:10.5px;letter-spacing:.2px}
+.spacer{flex:1}
+.now{color:var(--muted);font-size:12px;text-align:right;line-height:1.3}
+.now b{color:var(--text);font-weight:600}
+.btn{background:var(--panel2);border:1px solid var(--line2);color:var(--text);border-radius:8px;padding:7px 12px;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#06121f;font-weight:700;padding:9px 18px}
+.btn.primary:hover{filter:brightness(1.1);color:#06121f}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:disabled:hover{border-color:var(--line2);color:var(--text)}
+
+.main{flex:1;display:grid;grid-template-columns:262px 1fr 292px;min-height:0}
+.side{background:var(--panel);min-height:0;display:flex;flex-direction:column}
+.side.left{border-right:1px solid var(--line)}
+.side.right{border-left:1px solid var(--line)}
+.side h2{margin:0;padding:10px 13px 7px;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--sub);font-weight:700;flex:0 0 auto}
+.scroll{overflow:auto;flex:1;min-height:0;padding:0 10px 14px}
+.scroll::-webkit-scrollbar{width:9px}
+.scroll::-webkit-scrollbar-thumb{background:#1d2f47;border-radius:9px}
+
+.search{position:sticky;top:0;background:var(--panel);padding:0 0 8px;z-index:2}
+.search input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.grp{margin:9px 0 4px;font-size:10px;letter-spacing:.9px;text-transform:uppercase;color:var(--sub);font-weight:700}
+.tpl{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:8px;padding:6px 8px;cursor:pointer;transition:.12s}
+.tpl:hover{background:var(--panel2);border-color:var(--line)}
+.tpl.on{background:#12263c;border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.tpl .nm{flex:1;min-width:0}
+.tpl .nm span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tpl .nm em{display:block;font-style:normal;color:var(--sub);font-size:10.5px}
+.tpl .box{flex:0 0 auto;border:1.5px solid var(--line2);border-radius:2px;background:#0a1424}
+.tpl.on .box{border-color:var(--accent)}
+
+.stage{display:flex;flex-direction:column;min-width:0;background:radial-gradient(900px 500px at 70% -10%,#14273f 0%,rgba(20,39,63,0) 60%),#080f1c}
+.stagebar{display:flex;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid var(--line);background:#0b1424;flex:0 0 auto;flex-wrap:wrap}
+.pill{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted);font-size:11.5px}
+.pill b{color:var(--accent);font-weight:600}
+.viewport{flex:1;min-height:0;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:20px}
+.viewport::-webkit-scrollbar{width:11px;height:11px}
+.viewport::-webkit-scrollbar-thumb{background:#1d2f47;border-radius:9px}
+.scaler{position:relative;flex:0 0 auto}
+#sheetHost{position:absolute;top:0;left:0;transform-origin:0 0}
+.sheet{position:relative;background:#fff;box-shadow:0 12px 44px #0009,0 0 0 1px #0006;overflow:hidden;margin:0 0 14px}
+.sheet:last-child{margin-bottom:0}
+.sheetLabel{position:absolute;left:0;bottom:-15px;font-size:11px;color:var(--muted)}
+.slot{position:absolute;overflow:hidden}
+.slot.cut{outline:.2mm dashed #b9b9b9;outline-offset:0}
+.slot.sel{box-shadow:inset 0 0 0 .25mm #48dfd8}
+.mk{position:absolute;pointer-events:none}
+.mk i{position:absolute;background:#000;display:block}
+.ph{position:absolute}
+.ph img{display:block;width:100%;height:100%}
+.empty{position:absolute;inset:0;display:grid;place-content:center;text-align:center;color:#9aa7b5;gap:6px;pointer-events:none}
+.empty b{color:#5c6b7a;font-size:14px}
+.drop{position:absolute;inset:0;background:#48dfd822;border:2px dashed var(--accent);display:none;place-content:center;text-align:center;color:var(--accent);font-weight:700;z-index:5;border-radius:4px}
+.drop.on{display:grid}
+
+.sec{border-top:1px solid var(--line);padding:11px 13px}
+.sec:first-child{border-top:0}
+.row{display:flex;align-items:center;gap:8px;margin:7px 0}
+.row label{flex:1;color:var(--muted);font-size:12px}
+.row .val{color:var(--text);font-variant-numeric:tabular-nums;min-width:52px;text-align:right;font-size:12px}
+input[type=range]{flex:1.4;accent-color:var(--accent);height:18px}
+input[type=number],input[type=text],select{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:4px 7px;width:74px;outline:none}
+input[type=text]{width:100%}
+input:focus,select:focus{border-color:var(--accent)}
+.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;background:var(--panel2);border:0;padding:6px 4px;cursor:pointer;color:var(--muted);font-size:11.5px}
+.seg button.on{background:#12263c;color:var(--accent);font-weight:600}
+.nudge{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:112px}
+.nudge button{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:3px 0;cursor:pointer;color:var(--muted)}
+.nudge button:hover{color:var(--accent);border-color:var(--accent)}
+.chk{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--muted);font-size:12px}
+.chk input{accent-color:var(--accent);width:15px;height:15px}
+.warn{border-left:2px solid var(--warn);background:#e0b36a14;padding:6px 9px;border-radius:0 6px 6px 0;margin:6px 0;color:#f0d9ae;font-size:11.5px}
+.warn.bad{border-color:var(--danger);background:#ff8a8014;color:#ffc9c4}
+.warn.good{border-color:var(--ok);background:#72e6ad12;color:#bdf3d8}
+.meter{font-size:12px;color:var(--muted)}
+.meter b{color:var(--text);font-variant-numeric:tabular-nums}
+.meter b.low{color:var(--warn)}
+.meter b.bad{color:var(--danger)}
+.meter b.ok{color:var(--ok)}
+.tips{font-size:11.5px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.tips ol{margin:5px 0 0;padding-left:17px}
+.tips li{margin:3px 0}
+.tips b{color:var(--accent);font-weight:600}
+.filebar{display:flex;gap:6px}
+.filebar .btn{flex:1;text-align:center}
+.privacy{font-size:11px;color:var(--sub);padding:8px 13px;border-top:1px solid var(--line);background:var(--panel2)}
+
+.strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.thumb{position:relative;width:42px;height:42px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#0a1424;cursor:pointer;padding:0}
+.thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.thumb.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.thumb b{position:absolute;left:0;bottom:0;font-size:9px;background:#000a;padding:0 3px;color:#fff;font-weight:600}
+.thumb .x{position:absolute;right:0;top:0;background:#000b;color:#fff;border:0;font-size:10px;line-height:1;padding:2px 3px;cursor:pointer;border-radius:0 0 0 5px}
+.thumb .add{border-style:dashed;color:var(--sub);display:grid;place-items:center;font-size:16px}
+.cropwrap{position:relative;margin:8px auto 0;background:#0a1424;display:flex;justify-content:center;align-items:center;overflow:hidden;touch-action:none;border-radius:6px}
+.cropwin{position:absolute;border:1.2px solid var(--accent);background:#48dfd81f;cursor:move}
+.cropwin i{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;background:var(--accent);border-radius:0 0 5px 0;cursor:nwse-resize}
+.crophint{position:absolute;left:0;top:0;background:#000a;color:#cfe6ff;font-size:10.5px;padding:1px 5px;border-radius:0 0 6px 0;pointer-events:none}
+.persp .cropwin{cursor:crosshair}
+.pc{position:absolute;width:13px;height:13px;border-radius:50%;background:var(--accent2);border:2px solid #fff;transform:translate(-50%,-50%);cursor:grab;z-index:3}
+
+/* sheet pe direct drag karne ka cursor */
+.sheet.hasImage{cursor:move}
+
+/* Calibration sheet: only visible while printing the ruler */
+#calSheet{display:none}
+.calBox{position:absolute;left:12mm;top:12mm;width:100mm;height:100mm;border:.4mm solid #000}
+.calTick{position:absolute;background:#000}
+.calLbl{position:absolute;color:#000;font-family:Arial,sans-serif}
+.calLine{position:absolute;left:12mm;top:125mm;width:50mm;height:.4mm;background:#000}
+
+/* phone / tablet: panels stack ho jaate hain, page scroll karta hai */
+@media screen and (max-width:900px){
+  body{overflow:auto}
+  .app{height:auto;min-height:100%}
+  .main{display:flex;flex-direction:column;grid-template-columns:none}
+  .stage{order:1;height:56vh;min-height:300px;border-bottom:1px solid var(--line)}
+  .side{border:0}
+  .side.left{order:2}
+  .side.right{order:3;border-top:1px solid var(--line)}
+  .side.left,.side.right{border-bottom:1px solid var(--line)}
+  .side h2{position:sticky;top:0;background:var(--panel);z-index:2}
+  .scroll{overflow:visible;flex:0 0 auto;padding-bottom:10px}
+  .side.left .scroll{max-height:46vh;overflow:auto}
+  #tplList{display:flex;flex-wrap:wrap;gap:4px}
+  #tplList .grp{width:100%;margin:8px 0 2px}
+  #tplList .tpl{flex:1 1 46%;width:auto}
+  #tplList .tpl .box{display:none}
+  .viewport{padding:10px}
+  .topbar{flex-wrap:wrap;gap:8px}
+  .now{display:none}
+  .btn{padding:9px 13px}
+  .seg button{padding:9px 6px}
+  .nudge button{padding:7px 0}
+  input[type=number],input[type=text],select{padding:8px 7px}
+  input[type=range]{height:26px}
+  .chk input{width:19px;height:19px}
+  .thumb{width:52px;height:52px}
+}
+
+@media print{
+  html,body{height:auto;overflow:visible;background:#fff}
+  .topbar,.side,.stagebar,.drop,.privacy,.sheetLabel{display:none!important}
+  .app,.main,.stage,.viewport{display:block!important;height:auto!important;min-height:0!important;overflow:visible!important;padding:0!important;margin:0!important;background:#fff!important}
+  .scaler{position:static!important;width:auto!important;height:auto!important}
+  #sheetHost{position:static!important;transform:none!important;width:auto!important;height:auto!important}
+  .sheet{position:relative!important;box-shadow:none!important;margin:0!important;break-after:page;break-inside:avoid;
+         transform:scale(var(--calx,1),var(--caly,1))!important;transform-origin:0 0!important}
+  .sheet:last-child{break-after:auto}
+  .noPrint{display:none!important}
+  .slot.sel{box-shadow:none!important}
+  .slot.marks{outline:0!important}
+  .cropwin,.crophint,.pc{display:none!important}
+  .empty{display:none!important}
+  body.calprint .viewport{display:none!important}
+  body.calprint #calSheet{display:block!important;position:relative;width:210mm;height:297mm;background:#fff}
+  body.calprint #sheetHost{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="dot">P</div>
+      <div>Print Studio<small>exact-size photo &amp; document printing · offline</small></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="now" id="nowTpl">—</div>
+    <button class="btn" id="btnRuler" title="Print a 100 mm box to calibrate your printer">Print ruler</button>
+    <button class="btn primary" id="btnPrint">Print&nbsp;&nbsp;⌘/Ctrl+P</button>
+  </div>
+
+  <div class="main">
+
+    <!-- LEFT: templates -->
+    <aside class="side left">
+      <h2>Templates (exact size)</h2>
+      <div class="scroll">
+        <div class="search"><input id="q" type="search" aria-label="Template search" placeholder="Search… aadhaar, passport, A4" autocomplete="off"></div>
+        <div id="tplList"></div>
+        <div class="grp">Custom size</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <input type="text" id="cName" aria-label="Custom template ka naam" placeholder="Name (e.g. Mini Aadhaar)">
+          <div class="row" style="margin:0">
+            <label style="flex:0 0 auto" for="cW">W</label><input type="number" id="cW" min="5" max="500" step="0.1" value="54" style="width:66px">
+            <label style="flex:0 0 auto" for="cH">H</label><input type="number" id="cH" min="5" max="500" step="0.1" value="34" style="width:66px">
+          </div>
+          <div style="color:var(--sub);font-size:11px">millimetre me. Save karne ke baad list me permanent rahega.</div>
+          <div class="filebar">
+            <button class="btn" id="btnSaveCustom">Save template</button>
+            <button class="btn" id="btnDelCustom" title="Delete selected custom template">Delete</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER: sheet -->
+    <section class="stage">
+      <div class="stagebar">
+        <span class="pill">Sheet <b id="pillSheet">A4</b></span>
+        <span class="pill">Slot <b id="pillSlot">—</b></span>
+        <span class="pill">Placed <b id="pillCopies">—</b></span>
+        <span class="pill">Pages <b id="pillPages">1</b></span>
+        <div class="spacer" style="flex:1"></div>
+        <span class="pill" id="pillFile">no file</span>
+      </div>
+      <div class="viewport" id="viewport">
+        <div class="scaler" id="scaler">
+          <div id="sheetHost"></div>
+        </div>
+        <div class="drop" id="drop">Photo / PDF yahan chhodo</div>
+      </div>
+    </section>
+
+    <!-- RIGHT: adjust -->
+    <aside class="side right">
+      <h2>Adjust &amp; print</h2>
+      <div class="scroll" style="padding:0">
+
+        <div class="sec">
+          <div class="filebar">
+            <button class="btn" id="btnPick" aria-label="Photo ya PDF file chuno">Add photo / PDF</button>
+            <button class="btn" id="btnClear" disabled aria-label="Selected file hatao">Remove</button>
+          </div>
+          <div class="strip" id="strip"></div>
+          <div style="color:var(--sub);font-size:11px;margin-top:6px" id="stripHint">Ek saath kai files add kar sakte ho — thumbnail pe click karke select karo.</div>
+          <div style="color:var(--sub);font-size:11px;margin-top:6px">ya file sheet pe drag-drop karo, aur <b style="color:var(--muted)">Ctrl+V</b> se screenshot paste karo. <b style="color:var(--muted)">PDF direct chalta hai</b> (Aadhaar, PAN, marksheet, koi bhi) — multi-page PDF me page badal sakte ho. Locked PDF maange to password daalo; e-Aadhaar ka password = naam ke pehle 4 letters CAPITAL + birth year (jaise <b style="color:var(--muted)">AMANKumar2008</b> → <b style="color:var(--muted)">AMAN2008</b>).</div>
+
+          <div id="pdfBox" style="display:none">
+            <div class="row" style="margin-top:9px"><label>PDF page</label>
+              <button class="btn" id="pdfPrev" title="Pichla page">◀</button>
+              <span class="val" id="pdfLbl" style="min-width:64px">— / —</span>
+              <button class="btn" id="pdfNext" title="Agla page">▶</button>
+            </div>
+            <div class="row"><label for="pdfDpi">Render quality</label><input type="range" id="pdfDpi" min="120" max="400" step="10" value="300"><span class="val" id="pdfDpiV">300 dpi</span></div>
+            <div class="filebar" style="margin-top:2px">
+              <button class="btn" id="btnReal" title="PDF jitna asli mm size hai, print me bhi wahi rahe">Asli 1:1 size</button>
+              <button class="btn" id="btnRealSlot" title="Poora PDF page slot me fit karo">Page fit</button>
+            </div>
+            <div class="filebar" style="margin-top:6px">
+              <button class="btn" id="btnPdfAll" title="Is PDF ke saare page alag-alag files ki tarah add karo">Saare page add karo</button>
+            </div>
+            <div style="color:var(--sub);font-size:11px;margin-top:5px" id="pdfSize">—</div>
+          </div>
+          <div id="warns" style="margin-top:8px" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="sec">
+          <div class="meter">Print quality: <b id="mDpi">—</b></div>
+          <div class="meter">Natural size: <b id="mNat">—</b></div>
+          <div class="meter">Rendered: <b id="mBox">—</b></div>
+          <div class="meter" id="mAsliRow" style="display:none">Document ka asli size: <b id="mAsli">—</b></div>
+        </div>
+
+        <div class="sec">
+          <div class="row" style="margin-top:0"><label>Image fit</label></div>
+          <div class="seg" id="segFit" role="group" aria-label="Image fit">
+            <button data-v="contain" class="on">Whole</button>
+            <button data-v="cover">Fill</button>
+            <button data-v="stretch">Stretch</button>
+          </div>
+          <div style="color:var(--sub);font-size:11px;margin-top:5px"><b style="color:var(--muted)">Whole</b> = poora document dikhega (Aadhaar/PAN ke liye). <b style="color:var(--muted)">Fill</b> = slot poora bharega, extra crop (photo ke liye).</div>
+
+          <div class="row"><label for="zoom">Zoom</label><input type="range" id="zoom" min="0.2" max="16" step="0.01" value="1" aria-label="Zoom"><span class="val" id="zoomV">100%</span></div>
+          <div class="row"><label>Position</label>
+            <div class="nudge" role="group" aria-label="Position">
+              <span></span><button data-n="up" title="Up" aria-label="Upar">▲</button><span></span>
+              <button data-n="left" title="Left" aria-label="Baaye">◀</button><button data-n="reset" title="Reset" aria-label="Reset">●</button><button data-n="right" title="Right" aria-label="Daayein">▶</button>
+              <span></span><button data-n="down" title="Down" aria-label="Neeche">▼</button><span></span>
+            </div>
+          </div>
+          <div class="row" style="color:var(--sub);font-size:11px;margin-top:-2px">Arrow keys se bhi move (Shift = tez). Sheet pe photo drag karo.</div>
+          <div class="row"><label>Rotate</label>
+            <button class="btn" data-r="-90" aria-label="Left rotate">⟲ 90°</button>
+            <button class="btn" data-r="90" aria-label="Right rotate">⟳ 90°</button>
+            <span class="val" id="rotV">0°</span>
+          </div>
+          <div class="row"><label for="fine">Fine angle</label><input type="range" id="fine" min="-15" max="15" step="0.1" value="0" aria-label="Fine angle"><span class="val" id="fineV">0.0°</span></div>
+          <div class="row"><label for="asliW">Is document ka asli size</label>
+            <input type="number" id="asliW" min="5" max="500" step="0.1" placeholder="—" style="width:58px" aria-label="Asli width mm">
+            <span class="val" style="min-width:8px">×</span>
+            <input type="number" id="asliH" min="5" max="500" step="0.1" placeholder="—" style="width:58px" aria-label="Asli height mm">
+            <span class="val">mm</span>
+          </div>
+          <div class="filebar" style="margin-top:2px">
+            <button class="btn" id="btnAsliApply" title="Photo ko is original size par 1:1 print karo">1:1 size set karo</button>
+          </div>
+          <div style="color:var(--sub);font-size:11px;margin-top:5px">Photo me card kitna bada hona chahiye wo mm me likho (Aadhaar = 85.6 × 54) — tool zoom apne aap set kar dega. PDF me size apne aap pata chal jata hai.</div>
+        </div>
+
+        <div class="sec">
+          <div class="row" style="margin-top:0"><label>Crop / sirf ek hissa chhapo</label></div>
+          <div class="cropwrap" id="cropWrap" style="min-height:60px">
+            <div style="color:var(--sub);font-size:11.5px;padding:8px">File add karo, phir yahan crop window dikhega.</div>
+          </div>
+          <div class="filebar" style="margin-top:8px">
+            <button class="btn" id="btnCropAll" title="Poora document slot me">Poora</button>
+            <button class="btn" id="btnCropSquare" title="Crop window ko beech me lao">Beech me</button>
+            <button class="btn" id="btnCropHalf" title="2× andar zoom (crop chhota)">2× crop</button>
+          </div>
+          <div style="color:var(--sub);font-size:11px;margin-top:6px">Neela box <b style="color:var(--muted)">drag</b> karo = position, kone ka handle <b style="color:var(--muted)">drag</b> karo = kitna zoom/crop. Sirf box ke andar wala hissa print hoga.</div>
+        </div>
+
+        <div class="sec">
+          <div class="row" style="margin-top:0"><label>Scan theek karo (photo/PDF copy)</label></div>
+          <div class="row"><label for="fBright">Ujala (brightness)</label><input type="range" id="fBright" min="60" max="180" step="1" value="100" aria-label="Brightness"><span class="val" id="fBrightV">100%</span></div>
+          <div class="row"><label for="fCont">Contrast</label><input type="range" id="fCont" min="60" max="200" step="1" value="100" aria-label="Contrast"><span class="val" id="fContV">100%</span></div>
+          <div class="row"><label for="fSharp">Teekha (sharpen)</label><input type="range" id="fSharp" min="0" max="100" step="5" value="0" aria-label="Sharpen"><span class="val" id="fSharpV">0</span></div>
+          <label class="chk" style="margin-top:6px"><input type="checkbox" id="fGrey"> Black &amp; white (photo copy jaisa)</label>
+          <label class="chk" style="margin-top:6px"><input type="checkbox" id="fDeskew"> Kona theek karo (perspective) — sheet ke 4 kone chuno</label>
+          <div class="filebar" style="margin-top:8px">
+            <button class="btn" id="btnFixAuto" title="Auto levels + white border kaat do">Auto theek</button>
+            <button class="btn" id="btnFixReset">Reset</button>
+          </div>
+          <div style="color:var(--sub);font-size:11px;margin-top:6px" id="fixNote">Ye sab print bhi isi tarah aayega (PNG/PDF me bhi).</div>
+        </div>
+
+        <div class="sec">
+          <div class="row" style="margin-top:0"><label>Print on</label></div>
+          <div class="seg" id="segKind" role="group" aria-label="Print mode">
+            <button data-v="tile" class="on">Sheet (copies)</button>
+            <button data-v="nup">N-up</button>
+            <button data-v="page">Exact page</button>
+          </div>
+
+          <div class="row" id="rowSheet"><label for="sheetSel">Sheet size</label>
+            <select id="sheetSel" aria-label="Sheet size" style="width:132px">
+              <option value="a4">A4 portrait</option>
+              <option value="a4l">A4 landscape</option>
+              <option value="a3">A3</option>
+              <option value="letter">US Letter</option>
+              <option value="p4x6">Photo 4×6"</option>
+              <option value="p5x7">Photo 5×7"</option>
+              <option value="p6x8">Photo 6×8"</option>
+              <option value="p35x5">Photo 3.5×5"</option>
+              <option value="cust">Custom…</option>
+            </select>
+          </div>
+          <div class="row" id="rowCustSheet" style="display:none">
+            <label style="flex:0 0 auto" for="custSW">Sheet W</label><input type="number" id="custSW" min="20" max="1000" step="0.5" value="210" style="width:62px">
+            <label style="flex:0 0 auto" for="custSH">H</label><input type="number" id="custSH" min="20" max="1000" step="0.5" value="297" style="width:62px">
+            <span class="val">mm</span>
+          </div>
+
+          <div class="row" id="rowNup" style="display:none"><label for="nupSel">Pages per sheet</label>
+            <select id="nupSel" aria-label="Pages per sheet" style="width:110px">
+              <option value="1">1</option><option value="2">2</option><option value="4">4</option>
+              <option value="6">6</option><option value="9">9</option>
+            </select>
+          </div>
+          <label class="chk" id="rowEach" style="margin-top:8px"><input type="checkbox" id="tileEach"> Har file ki apni sheet (batch printing)</label>
+
+          <div class="row"><label for="copies">Copies / kitni baar</label><input type="number" id="copies" min="1" max="999" step="1" value="1" aria-label="Copies"><span class="val" id="copiesMax">max —</span></div>
+          <div class="row"><label for="gap">Gap</label><input type="number" id="gap" min="0" max="30" step="0.5" value="3" aria-label="Gap"><span class="val">mm</span></div>
+          <div class="row"><label for="margin">Margin</label><input type="number" id="margin" min="0" max="40" step="0.5" value="6" aria-label="Margin"><span class="val">mm</span></div>
+
+          <div class="row"><label for="cutSel">Cut marks</label>
+            <select id="cutSel" aria-label="Cut marks" style="width:132px">
+              <option value="dash">Dashed line</option>
+              <option value="marks">Corner crop marks</option>
+              <option value="none">Kuch nahi (clean)</option>
+            </select>
+          </div>
+          <label class="chk" style="margin-top:8px"><input type="checkbox" id="booklet"> Booklet (2-per-sheet, fold karke kitaab)</label>
+          <div class="row" id="rowDuplex"><label for="dupSel">Duplex</label>
+            <select id="dupSel" aria-label="Duplex" style="width:132px">
+              <option value="off">Off</option>
+              <option value="odd">Pehle odd pages</option>
+              <option value="even">Sirf even pages</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="row" style="margin-top:0"><label>Printer scale correction</label></div>
+          <div class="row"><label for="calInX">Printed 100 mm naapi (chori)</label><input type="number" id="calInX" min="50" max="150" step="0.1" placeholder="—" style="width:62px"><span class="val">mm</span></div>
+          <div class="row"><label for="calInY">Printed 100 mm naapi (lambai)</label><input type="number" id="calInY" min="50" max="150" step="0.1" placeholder="—" style="width:62px"><span class="val">mm</span></div>
+          <div class="filebar">
+            <button class="btn" id="btnCalApply">Apply</button>
+            <button class="btn" id="btnCalReset">Reset (100%)</button>
+          </div>
+          <div class="meter" style="margin-top:7px">Correction: <b id="mCal">100.0% × 100.0%</b></div>
+          <div style="color:var(--sub);font-size:11px;margin-top:4px">Har printer 1–3% scale badal deta hai. “Print ruler” se 100 mm ka box print karo, scale se naapo — chori aur lambai alag-alag daal sakte ho, sizes exact ho jayenge.</div>
+        </div>
+
+        <div class="sec">
+          <div class="row" style="margin-top:0"><label>Job bachao / undo</label></div>
+          <div class="filebar">
+            <button class="btn" id="btnUndo" title="Pichhla step (Ctrl+Z)">Undo</button>
+            <button class="btn" id="btnSaveJob" title="Sab settings + layout ek file me">Save job</button>
+          </div>
+          <div class="filebar" style="margin-top:6px">
+            <button class="btn" id="btnLoadJob">Load job</button>
+            <button class="btn" id="btnPng" title="Sheet ka PNG (300 dpi)">PNG export</button>
+          </div>
+          <input type="file" id="jobFile" accept="application/json,.json" aria-label="Job file (printjob.json) chuno" hidden>
+        </div>
+
+        <div class="sec">
+          <div class="tips">
+            <b>Print dialog me ye 3 setting zaroori hai</b>
+            <ol>
+              <li>Paper size: <b>A4</b></li>
+              <li>Margins / Scale: <b>None / 100% (Actual size)</b> — “Fit to page” <u>off</u></li>
+              <li>Printer: <b>EPSON L3210 Series</b></li>
+            </ol>
+            Warna size galat aayega. PDF chahiye to usi dialog me “Save as PDF”.
+          </div>
+        </div>
+
+      </div>
+      <div class="privacy">Sab kuch isi laptop pe rehta hai — koi photo kahin upload nahi hoti.</div>
+    </aside>
+
+  </div>
+</div>
+
+<input type="file" id="file" accept="image/*,application/pdf,.pdf" multiple aria-label="Photo ya PDF file chuno" hidden>
+<style id="pageRule">@page{size:210mm 297mm;margin:0}</style>
+
+<div id="calSheet">
+  <div class="calBox" id="calBox"></div>
+  <div class="calLbl" style="left:12mm;top:115mm;font-size:11px">100 mm &times; 100 mm — isko scale se naapo</div>
+  <div class="calLine"></div>
+  <div class="calLbl" style="left:12mm;top:127mm;font-size:11px">50 mm</div>
+  <div class="calLbl" style="left:70mm;top:12mm;font-size:16px;font-weight:bold">PRINT STUDIO — CALIBRATION</div>
+</div>
+
+<script src="lib/pdf.min.js"></script>
+<!-- pdf.worker.min.js sirf file:// par main-thread fallback ke liye lazy-load hota hai (pdfSetup) -->
+<script>
+"use strict";
+const PXMM = 96 / 25.4;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const mm = (n) => (Math.round(n * 100) / 100) + "mm";
+const inOf = (n) => (n / 25.4).toFixed(2) + '"';
+const LS_KEY = "print-studio:v1";
+
+const TEMPLATES = [
+  { id:"pp-in",   g:"Passport / visa photo", n:"Passport photo (India)",      w:35,    h:45,    kind:"tile", fit:"cover"   },
+  { id:"pp-us",   g:"Passport / visa photo", n:'Visa photo 2×2" (US / OCI)',  w:50.8,  h:50.8,  kind:"tile", fit:"cover"   },
+  { id:"pp-sch",  g:"Passport / visa photo", n:"Schengen / UK visa",          w:35,    h:45,    kind:"tile", fit:"cover"   },
+  { id:"stamp",   g:"Passport / visa photo", n:"Stamp size (India)",          w:22,    h:26,    kind:"tile", fit:"cover"   },
+  { id:"stamp2",  g:"Passport / visa photo", n:"Stamp size (small)",          w:20,    h:25,    kind:"tile", fit:"cover"   },
+  { id:"panph",   g:"Passport / visa photo", n:"PAN form photo",              w:35,    h:25,    kind:"tile", fit:"cover"   },
+  { id:"sign",    g:"Passport / visa photo", n:"Signature strip",             w:40,    h:15,    kind:"tile", fit:"contain" },
+  { id:"thumb",   g:"Passport / visa photo", n:"Thumbnail (square)",          w:25,    h:25,    kind:"tile", fit:"cover"   },
+
+  { id:"aadhaar", g:"ID cards (real size)",  n:"Aadhaar card",                w:85.6,  h:54,    kind:"tile", fit:"contain" },
+  { id:"pan",     g:"ID cards (real size)",  n:"PAN card",                    w:85.6,  h:54,    kind:"tile", fit:"contain" },
+  { id:"voter",   g:"ID cards (real size)",  n:"Voter ID (EPIC)",             w:85.6,  h:54,    kind:"tile", fit:"contain" },
+  { id:"dl",      g:"ID cards (real size)",  n:"Driving Licence (card)",      w:85.6,  h:54,    kind:"tile", fit:"contain" },
+  { id:"atm",     g:"ID cards (real size)",  n:"ATM / debit card",            w:85.6,  h:54,    kind:"tile", fit:"contain" },
+  { id:"id1",     g:"ID cards (real size)",  n:"Any ID-1 card",               w:85.6,  h:54,    kind:"tile", fit:"contain" },
+
+  { id:"a4",      g:"Document pages",        n:"A4",                          w:210,   h:297,   kind:"page", fit:"contain" },
+  { id:"a5",      g:"Document pages",        n:"A5",                          w:148,   h:210,   kind:"page", fit:"contain" },
+  { id:"a6",      g:"Document pages",        n:"A6",                          w:105,   h:148,   kind:"page", fit:"contain" },
+  { id:"b5",      g:"Document pages",        n:"B5",                          w:176,   h:250,   kind:"page", fit:"contain" },
+  { id:"letter",  g:"Document pages",        n:"US Letter",                   w:215.9, h:279.4, kind:"page", fit:"contain" },
+  { id:"legal",   g:"Document pages",        n:"Legal (bada paper chahiye)",  w:215.9, h:355.6, kind:"page", fit:"contain" },
+  { id:"a3",      g:"Document pages",        n:"A3 (bada paper chahiye)",     w:297,   h:420,   kind:"page", fit:"contain" },
+
+  { id:"p35x5",   g:"Photo prints",          n:'3.5×5"',                      w:88.9,  h:127,   kind:"tile", fit:"cover"   },
+  { id:"p4x6",    g:"Photo prints",          n:'4×6"',                        w:101.6, h:152.4, kind:"tile", fit:"cover"   },
+  { id:"p5x7",    g:"Photo prints",          n:'5×7"',                        w:127,   h:177.8, kind:"tile", fit:"cover"   },
+  { id:"p6x8",    g:"Photo prints",          n:'6×8"',                        w:152.4, h:203.2, kind:"tile", fit:"cover"   },
+  { id:"p8x10",   g:"Photo prints",          n:'8×10"',                       w:203.2, h:254,   kind:"tile", fit:"cover"   }
+];
+
+const SHEETS = [
+  { id:"a4",    n:"A4 portrait",   w:210,   h:297   },
+  { id:"a4l",   n:"A4 landscape",  w:297,   h:210   },
+  { id:"a3",    n:"A3",            w:297,   h:420   },
+  { id:"letter",n:"US Letter",     w:215.9, h:279.4 },
+  { id:"p4x6",  n:'Photo 4×6"',    w:152.4, h:101.6 },
+  { id:"p5x7",  n:'Photo 5×7"',    w:127,   h:177.8 },
+  { id:"p6x8",  n:'Photo 6×8"',    w:152.4, h:203.2 },
+  { id:"p35x5", n:'Photo 3.5×5"',  w:88.9,  h:127   },
+  { id:"cust",  n:"Custom sheet",  w:0,     h:0      }
+];
+
+const S = {
+  tplId: "aadhaar", kind: "tile", fit: "contain",
+  copies: 1, gap: 3, margin: 6, cut: "dash", cal: 1, calX: 1, calY: 1,
+  sheet: "a4", sw: 210, sh: 297, tileEach: false, nup: 1, booklet: false, duplex: "off", custom: []
+};
+
+/* ITEMS: har loaded file ka apna image + position/crop/fix state */
+let ITEMS = [];
+let sel = 0;
+let busy = false;
+let pdfSeq = 0;
+let undoStack = [];
+
+const cur = () => ITEMS[sel] || null;
+const EIMG = (c) => (c ? (c.fim || c.im) : null);
+
+function mkItem(name, im, url) {
+  return {
+    name, im, url, fim: null, furl: null,
+    zoom: 1, dx: 0, dy: 0, rot: 0, fine: 0,
+    fit: tpl().fit, crop: null, srcmm: null, pdf: null,
+    fix: { bright: 100, cont: 100, grey: false, sharp: 0, persp: null }
+  };
+}
+function addItem(name, im, url) {
+  const c = mkItem(name, im, url);
+  applySavedGeo(c);
+  ITEMS.push(c);
+  sel = ITEMS.length - 1;
+  if (fixDirty(c.fix)) applyFix(c);
+  return c;
+}
+function removeItem(i) {
+  const c = ITEMS[i];
+  if (!c) return;
+  if (c.url) URL.revokeObjectURL(c.url);
+  if (c.furl) URL.revokeObjectURL(c.furl);
+  ITEMS.splice(i, 1);
+  if (sel >= ITEMS.length) sel = Math.max(0, ITEMS.length - 1);
+}
+function clearAll() {
+  for (let i = ITEMS.length - 1; i >= 0; i--) removeItem(i);
+  ITEMS = []; sel = 0;
+}
+
+/* ---------- undo ---------- */
+function snap() {
+  try {
+    const d = JSON.parse(JSON.stringify({ s: S, g: ITEMS.map(geoOf) }));
+    undoStack.push(d);
+    if (undoStack.length > 40) undoStack.shift();
+    $("#btnUndo").disabled = false;
+  } catch {}
+}
+function doUndo() {
+  const d = undoStack.pop();
+  if (!d) return;
+  for (const k of Object.keys(d.s)) S[k] = d.s[k];
+  ITEMS.forEach((c) => {
+    const g = d.g.find((x) => x.name === c.name);
+    if (g) Object.assign(c, { zoom: g.zoom, dx: g.dx, dy: g.dy, rot: g.rot, fine: g.fine || 0, fit: g.fit, crop: g.crop, srcmm: g.srcmm });
+  });
+  $("#btnUndo").disabled = !undoStack.length;
+  syncControls(); render(); save();
+}
+
+/* ---------- PDF (pdf.js 3.11 bundled in lib/) ---------- */
+const PDF = { doc: null, page: 1, count: 0, mmW: 0, mmH: 0, dpi: 300, name: "", pwTries: 0 };
+
+function pdfLibOk() { return typeof window.pdfjsLib === "object" && window.pdfjsLib; }
+
+let pdfReady = null;
+let pdfFake = false;   // worker script main thread par load hai (file:// ya worker-blocked browser)
+let pwTime = 0;        // password prompt me gaya waqt — watchdog timeout me se kata jaata hai
+
+/* worker ko main thread par lata hai — yahi fallback hai jahan Web Worker block hota hai */
+function pdfLoadFakeWorker() {
+  if (pdfFake) return Promise.resolve(true);
+  pdfFake = true;
+  return new Promise((res) => {
+    const s = document.createElement("script");
+    s.src = "lib/pdf.worker.min.js";
+    s.onload = () => res(true);
+    s.onerror = () => res(false);
+    document.head.appendChild(s);
+  });
+}
+
+function pdfSetup() {
+  if (!pdfLibOk()) return Promise.resolve(false);
+  if (pdfReady) return pdfReady;
+  // workerSrc hamesha relative — website aur file:// dono par sahi path
+  try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "lib/pdf.worker.min.js"; } catch {}
+  // file:// par Web Worker chalne se inkaar kar deta hai — worker ko main thread pe lata hoon
+  pdfReady = location.protocol === "file:" ? pdfLoadFakeWorker() : Promise.resolve(true);
+  return pdfReady;
+}
+
+/* getDocument + watchdog: worker chup ho gaya to main-thread worker par switch karke ek baar phir */
+async function pdfGetDoc(data) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const task = window.pdfjsLib.getDocument({ data, onPassword: pdfPassword });
+    const t0 = Date.now();
+    try {
+      return await new Promise((res, rej) => {
+        let done = false, timer = null;
+        const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+        timer = setInterval(() => {
+          if (done) return stop();
+          if (Date.now() - t0 - pwTime > (attempt ? 25000 : 6000)) { done = true; stop(); rej(new Error("__pdfworker__")); }
+        }, 200);
+        task.promise.then((v) => { done = true; stop(); res(v); }, (e) => { done = true; stop(); rej(e); });
+      });
+    } catch (e) {
+      try { task.destroy(); } catch {}
+      const hung = String((e && e.message) || e) === "__pdfworker__";
+      if (hung && attempt === 0 && !pdfFake && (await pdfLoadFakeWorker())) continue;
+      if (hung) throw new Error("PDF engine ka worker respond nahi kar raha — browser ne worker block kar diya hai.");
+      throw e;
+    }
+  }
+}
+
+function clearPdf() {
+  if (PDF.doc) { try { PDF.doc.destroy(); } catch {} }
+  PDF.doc = null; PDF.page = 1; PDF.count = 0; PDF.mmW = 0; PDF.mmH = 0; PDF.name = ""; PDF.pwTries = 0;
+  $("#pdfBox").style.display = "none";
+}
+
+function setBusy(on, msg) {
+  busy = on;
+  $("#btnPick").disabled = !!on;
+  if (on) $("#pillFile").textContent = msg || "ruk…";
+}
+
+function pdfPassword(cb, reason) {
+  PDF.pwTries++;
+  if (PDF.pwTries > 3) { cb(false); return; }
+  const tip = reason === "wrongPassword"
+    ? "Galat password. Dobara daalo:"
+    : "Ye PDF locked hai. Password daalo:\n(e-Aadhaar = naam ke pehle 4 letters CAPITAL + birth year, jaise AMAN2008)";
+  const t0 = Date.now();
+  const v = window.prompt(tip, "");
+  pwTime += Date.now() - t0;
+  if (v === null) { cb(false); return; }
+  cb(v.trim());
+}
+
+function loadImage(url) {
+  return new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => res(im);
+    im.onerror = () => rej(new Error("Image load nahi ho payi."));
+    im.src = url;
+  });
+}
+
+/* silent hang ko error me badalta hai: ms se zyada laga to promise reject */
+function guard(p, ms, tag) {
+  return new Promise((res, rej) => {
+    let done = false;
+    const timer = setTimeout(() => { if (!done) { done = true; rej(new Error(tag + " — " + Math.round(ms / 1000) + " second se zyada lag raha hai.")); } }, ms);
+    p.then((v) => { done = true; clearTimeout(timer); res(v); }, (e) => { done = true; clearTimeout(timer); rej(e); });
+  });
+}
+
+/* ek page -> PNG blob. maxMP pixel cap: bahut bade PDF se laptop atak jaye isliye */
+async function pdfPageBlob(page, dpi, maxMP) {
+  const v1 = page.getViewport({ scale: 1 });
+  const mmW = v1.width * 25.4 / 72, mmH = v1.height * 25.4 / 72;
+  let scale = dpi / 72;
+  const w = v1.width * scale, h = v1.height * scale;
+  const cap = Math.min(1, 5200 / Math.max(w, h), Math.sqrt((maxMP || 16) * 1e6 / (w * h)));
+  scale *= cap;
+  const vp = page.getViewport({ scale });
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.floor(vp.width));
+  canvas.height = Math.max(1, Math.floor(vp.height));
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await guard(page.render({ canvasContext: ctx, viewport: vp }).promise, 60000, "PDF engine atak gaya");
+  const blob = await new Promise((res) => { try { canvas.toBlob(res, "image/png"); } catch { res(null); } });
+  return { blob, mmW, mmH, px: canvas.width + "×" + canvas.height };
+}
+
+async function openPdf(file) {
+  if (!pdfLibOk()) {
+    alert("pdf.js library load nahi hui.\n\nCheck karo ki ye 2 files hon:\nPrint Studio\\lib\\pdf.min.js\nPrint Studio\\lib\\pdf.worker.min.js");
+    return;
+  }
+  if (!(await pdfSetup())) {
+    alert("pdf.js worker load nahi ho paya.\n\nCheck karo ki ye file hai:\nPrint Studio\\lib\\pdf.worker.min.js");
+    return;
+  }
+  clearPdf();
+  pdfSeq++;
+  setBusy(true, "PDF padh raha hoon…");
+  PDF.pwTries = 0;
+  let doc = null;
+  try {
+    const data = new Uint8Array(await file.arrayBuffer());
+    doc = await pdfGetDoc(data);
+  } catch (e) {
+    setBusy(false);
+    const msg = String((e && e.message) || e);
+    if (/password/i.test(msg)) alert("Password galat hone se PDF khul nahi payi.");
+    else if (/worker/i.test(msg)) alert("Is browser me PDF engine (Web Worker) atak gaya.\n\nLaptop ke Chrome/Edge me kholo, ya Desktop wali Print Studio file double-click karo — waha ye problem nahi aati.");
+    else alert("Ye PDF open nahi ho payi:\n" + msg.slice(0, 300));
+    return;
+  }
+  PDF.doc = doc; PDF.count = doc.numPages; PDF.name = file.name || "document.pdf";
+  $("#pdfBox").style.display = "block";
+  await renderPdfPage(1, null, true);
+}
+
+/* page num se image; target item ho to usi me replace warna naya item */
+async function renderPdfPage(num, target, firstOpen) {
+  if (!PDF.doc) return;
+  num = Math.max(1, Math.min(PDF.count, num | 0));
+  const seq = ++pdfSeq;
+  const live = () => seq === pdfSeq;
+  setPdfNav(false);
+  setBusy(true, "Page " + num + " render…");
+  let page = null;
+  try {
+    page = await guard(PDF.doc.getPage(num), 30000, "PDF page nahi khul raha");
+    if (!live()) return;
+    const r = await pdfPageBlob(page, PDF.dpi, 16);
+    if (!live()) return;
+    if (!r.blob) throw new Error("Page render se image nahi bani.");
+    const url = URL.createObjectURL(r.blob);
+    const im = await loadImage(url);
+    if (!live()) { URL.revokeObjectURL(url); return; }
+    PDF.page = num; PDF.mmW = r.mmW; PDF.mmH = r.mmH;
+    $("#pdfLbl").textContent = num + " / " + PDF.count;
+    $("#pdfSize").innerHTML = "PDF page: <b style='color:var(--muted)'>" + r.mmW.toFixed(1) + " × " + r.mmH.toFixed(1) +
+      " mm</b> · " + r.px + " px";
+    const label = PDF.name + " · p" + num;
+    let c;
+    if (target && target.pdf && target.pdf.num !== undefined) {
+      c = target;
+      if (c.url) URL.revokeObjectURL(c.url);
+      if (c.furl) URL.revokeObjectURL(c.furl);
+      c.im = im; c.url = url; c.fim = null; c.furl = null; c.name = label;
+    } else {
+      c = addItem(label, im, url);
+    }
+    c.pdf = { num, mmW: r.mmW, mmH: r.mmH };
+    c.srcmm = { w: r.mmW, h: r.mmH };
+    if (firstOpen) { c.fit = "contain"; fitSlot(c); }
+    syncControls(); render(); save();
+  } catch (e) {
+    if (live()) alert("Page render nahi hua:\n" + String((e && e.message) || e).slice(0, 300) +
+      "\n\nTry: pehle is tab me click karke active rakho, dpi ghatakar 150 karo, ya laptop ke Chrome/Edge me kholo.");
+  } finally {
+    if (page) { try { page.cleanup(); } catch {} }
+    if (live()) { setBusy(false); syncControls(); setPdfNav(true); }
+  }
+}
+
+async function addAllPdfPages() {
+  if (!PDF.doc || PDF.count < 2) return;
+  const me = cur();
+  if (!me) return;
+  const perPageMB = Math.round(PDF.mmW * PDF.mmH * (PDF.dpi / 25.4) ** 2 * 4 / 1048576 * 10) / 10;
+  const totalMB = Math.round(PDF.count * perPageMB);
+  const memTxt = totalMB >= 1024 ? Math.round(totalMB / 102.4) / 10 + " GB" : totalMB + " MB";
+  if (PDF.count > 60) {
+    alert(PDF.count + " page ek saath add karne se browser hang ho jata hai (yaadu ~" + memTxt + " chahiye).\n\nPehle “Render quality” slider kam karo (150 dpi kaafi hai), ya page ◀ ▶ se thode-thode add karo.");
+    return;
+  }
+  if (PDF.count > 12 && !confirm(PDF.count + " page add honge (~" + memTxt + " memory, " + Math.ceil(PDF.count * 1.3) + " second).\n\nPehle “Render quality” slider kam kar do to kaafi halka ho jayega.\n\nPhir bhi saare page add karein?")) return;
+  snap();
+  setPdfNav(false);
+  const base = sel;
+  for (let n = 1; n <= PDF.count; n++) {
+    setBusy(true, "Page " + n + "/" + PDF.count + "…");
+    try {
+      const page = await PDF.doc.getPage(n);
+      const r = await pdfPageBlob(page, PDF.dpi, 12);
+      page.cleanup();
+      if (!r.blob) continue;
+      const url = URL.createObjectURL(r.blob);
+      const im = await loadImage(url);
+      const label = PDF.name + " · p" + n;
+      const ex = ITEMS.find((x) => x.pdf && x.pdf.num === n && x.name === label);
+      const c = ex || mkItem(label, im, url);
+      if (ex) {
+        if (ex.url) URL.revokeObjectURL(ex.url);
+        if (ex.furl) URL.revokeObjectURL(ex.furl);
+        c.im = im; c.url = url; c.fim = null; c.furl = null;
+      } else {
+        c.pdf = { num: n, mmW: r.mmW, mmH: r.mmH };
+        c.srcmm = { w: r.mmW, h: r.mmH };
+        c.fit = "contain";
+        ITEMS.push(c);
+        fitSlot(c);
+      }
+    } catch {}
+  }
+  sel = base;
+  setBusy(false); setPdfNav(true);
+  renderAll(); save();
+}
+
+function setPdfNav(on) {
+  $("#pdfPrev").disabled = !on || PDF.page <= 1;
+  $("#pdfNext").disabled = !on || PDF.page >= PDF.count;
+  $("#pdfDpi").disabled = !on;
+  $("#btnReal").disabled = !on || !cur();
+  $("#btnRealSlot").disabled = !on;
+  $("#btnPdfAll").disabled = !on || PDF.count < 2;
+}
+
+/* item ko uske asli mm size par lao (PDF / scanned document ke liye) */
+function realSize(c, silent) {
+  if (!c || !c.srcmm) return;
+  const sl = slotMM(sheetMM());
+  c.rot = 0; c.fine = 0; c.dx = 0; c.dy = 0; c.zoom = 1; c.crop = null;
+  const b = boxFor(c, sl);
+  if (!b) return;
+  const f = c.srcmm.w / b.bw;
+  c.zoom = Math.min(16, Math.max(0.2, Math.round(f * 1000) / 1000));
+  if (!silent) toast("Document ab asli 1:1 size par hai. Sheet pe drag karke hissa set karo — sirf slot ke andar wala chhapega.", "good");
+}
+
+function fitSlot(c) {
+  if (!c) return;
+  c.zoom = 1; c.dx = 0; c.dy = 0; c.crop = null;
+}
+
+function toast(msg, k) {
+  $("#warns").insertAdjacentHTML("afterbegin", '<div class="warn ' + (k || "") + '">' + esc(msg) + "</div>");
+}
+
+$("#pdfPrev").addEventListener("click", () => renderPdfPage(PDF.page - 1, cur()));
+$("#pdfNext").addEventListener("click", () => renderPdfPage(PDF.page + 1, cur()));
+$("#btnReal").addEventListener("click", () => { snap(); realSize(cur(), false); render(); save(); });
+$("#btnRealSlot").addEventListener("click", () => { snap(); fitSlot(cur()); render(); save(); });
+$("#btnPdfAll").addEventListener("click", addAllPdfPages);
+$("#pdfDpi").addEventListener("input", (e) => { PDF.dpi = parseInt(e.target.value, 10) || 300; $("#pdfDpiV").textContent = PDF.dpi + " dpi"; });
+$("#pdfDpi").addEventListener("change", () => { if (PDF.doc) renderPdfPage(PDF.page, cur()); });
+
+
+/* ---------- persistence ---------- */
+let savedGeo = [];      // pichhli session ki position/crop, file naam se match
+const r2 = (n) => Math.round((n || 0) * 100) / 100;
+const r3 = (n) => Math.round((n || 0) * 1000) / 1000;
+const r4 = (n) => Math.round((n || 0) * 10000) / 10000;
+const SKEYS = ["tplId","kind","fit","copies","gap","margin","cut","cal","calX","calY","sheet","sw","sh","tileEach","nup","booklet","duplex","custom"];
+const GKEYS = ["tplId","kind","fit","copies","gap","margin","cal","calX","calY","sheet","sw","sh","nup"];
+
+function geoOf(c) {
+  return { name: c.name, zoom: r3(c.zoom), dx: r2(c.dx), dy: r2(c.dy), rot: c.rot, fine: r2(c.fine), fit: c.fit,
+           crop: c.crop ? { x: r4(c.crop.x), y: r4(c.crop.y), s: r4(c.crop.s) } : null, srcmm: c.srcmm, fix: c.fix };
+}
+function save() {
+  const d = {};
+  for (const k of SKEYS) d[k] = S[k];
+  d.geo = ITEMS.map(geoOf).slice(0, 24);
+  try { localStorage.setItem(LS_KEY, JSON.stringify(d)); } catch {}
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (Array.isArray(d.custom)) S.custom = d.custom.filter((c) => c && typeof c.w === "number" && typeof c.h === "number");
+    for (const k of GKEYS) if (typeof d[k] === "number" || typeof d[k] === "string") S[k] = d[k];
+    for (const k of ["tileEach","booklet"]) if (typeof d[k] === "boolean") S[k] = d[k];
+    if (typeof d.cut === "string") S.cut = d.cut; else if (typeof d.cut === "boolean") S.cut = d.cut ? "dash" : "none";
+    if (Array.isArray(d.geo)) savedGeo = d.geo.filter((g) => g && typeof g.name === "string");
+  } catch {}
+}
+function applySavedGeo(c) {
+  const g = savedGeo.find((x) => x.name === c.name);
+  if (!g) return;
+  if (typeof g.zoom === "number") c.zoom = Math.min(16, Math.max(0.2, g.zoom));
+  c.dx = g.dx || 0; c.dy = g.dy || 0; c.rot = g.rot || 0; c.fine = g.fine || 0;
+  if (g.fit) c.fit = g.fit;
+  if (g.crop) c.crop = g.crop;
+  if (g.srcmm) c.srcmm = g.srcmm;
+  if (g.fix) c.fix = Object.assign({ bright: 100, cont: 100, grey: false, sharp: 0, persp: null }, g.fix);
+}
+const allTpls = () => TEMPLATES.concat(S.custom);
+const tpl = () => allTpls().find((t) => t.id === S.tplId) || TEMPLATES[0];
+
+/* ---------- sheet geometry ---------- */
+const NUP = { 1:{c:1,r:1}, 2:{c:2,r:1}, 4:{c:2,r:2}, 6:{c:3,r:2}, 9:{c:3,r:3} };
+const nupCells = () => { const n = NUP[S.nup] || NUP[1]; return n.c * n.r; };
+
+function sheetMM() {
+  if (S.kind === "page") { const t = tpl(); return { w: t.w, h: t.h, label: t.n }; }
+  if (S.booklet) { const s = SHEETS.find((x) => x.id === "a4l") || SHEETS[1]; return { w: s.w, h: s.h, label: "A4 landscape (booklet)" }; }
+  const s = SHEETS.find((x) => x.id === S.sheet) || SHEETS[0];
+  if (s.id === "cust") return { w: S.sw, h: S.sh, label: "Custom " + S.sw + "×" + S.sh };
+  return { w: s.w, h: s.h, label: s.n };
+}
+function slotMM(sh) {
+  const t = tpl();
+  if (S.kind === "page") { const m = S.margin; return { w: Math.max(1, t.w - 2 * m), h: Math.max(1, t.h - 2 * m) }; }
+  if (S.kind === "nup" || S.booklet) {
+    const n = S.booklet ? { c:2, r:1 } : (NUP[S.nup] || NUP[1]);
+    const g = S.gap, m = S.margin;
+    const cw = (sh.w - 2 * m - (n.c - 1) * g) / n.c;
+    const chh = (sh.h - 2 * m - (n.r - 1) * g) / n.r;
+    const ar = t.w / t.h;
+    let w = cw, h = cw / ar;
+    if (h > chh) { h = chh; w = h * ar; }
+    return { w: Math.max(1, w), h: Math.max(1, h) };
+  }
+  return { w: t.w, h: t.h };
+}
+function grid(sh, sl) {
+  if (S.kind !== "tile" || S.booklet) return { cols: 1, rows: 1, max: 1, x0: S.margin, y0: S.margin };
+  const m = S.margin, g = S.gap;
+  const cols = Math.max(0, Math.floor((sh.w - 2 * m + g) / (sl.w + g)));
+  const rows = Math.max(0, Math.floor((sh.h - 2 * m + g) / (sl.h + g)));
+  const max = cols * rows;
+  const blockW = cols * sl.w + (cols - 1) * g;
+  const blockH = rows * sl.h + (rows - 1) * g;
+  return { cols, rows, max, x0: (sh.w - blockW) / 2, y0: (sh.h - blockH) / 2 };
+}
+function cellsPerSheet(sh, sl, g) {
+  if (S.booklet) return 2;
+  if (S.kind === "nup") return nupCells();
+  if (S.kind === "page") return 1;
+  return g.max;
+}
+
+/* item ka rendered box (mm) slot ke andar */
+function boxFor(c, sl) {
+  const im = EIMG(c);
+  if (!im) return null;
+  sl = sl || slotMM(sheetMM());
+  const ratio = im.naturalWidth / im.naturalHeight;
+  const r = ((c.rot % 180 !== 0) ? 1 / ratio : ratio);
+  let bw, bh;
+  if (c.fit === "stretch") { bw = sl.w; bh = sl.h; }
+  else if (c.fit === "cover") { bw = Math.max(sl.w, sl.h * r); bh = bw / r; }
+  else { bw = Math.min(sl.w, sl.h * r); bh = bw / r; }
+  bw *= c.zoom; bh *= c.zoom;
+  const unrotW = (c.rot % 180 !== 0) ? bh : bw;
+  const dpi = im.naturalWidth / (unrotW / 25.4);
+  return { bw, bh, dpi, slotW: sl.w, slotH: sl.h, rot: ((c.rot % 360) + 360) % 360, fine: c.fine || 0 };
+}
+
+/* crop window (normalized 0..1 box space) from item geometry */
+function cropAspect(c, sl) {
+  const b = boxFor(c, sl);
+  if (!b || !b.bw) return 1;
+  return (sl.h / b.bh) / (sl.w / b.bw);
+}
+function cropOf(c, sl) {
+  const b = boxFor(c, sl);
+  if (!b) return null;
+  const x = (b.bw - sl.w) / 2 - c.dx;
+  const y = (b.bh - sl.h) / 2 - c.dy;
+  return { x: x / b.bw, y: y / b.bh, s: sl.w / b.bw };
+}
+/* geometry wapas crop se (s = normalized width of window) */
+function setCrop(c, cr, sl) {
+  const b1 = boxFor({ im: EIMG(c), rot: c.rot, fit: c.fit, zoom: 1, dx: 0, dy: 0, fine: 0 }, sl);
+  if (!b1 || !cr || !(cr.s > 0)) return;
+  c.zoom = Math.min(16, Math.max(0.2, (sl.w / cr.s) / b1.bw));
+  const b = boxFor(c, sl);
+  c.dx = (b.bw - sl.w) / 2 - cr.x * b.bw;
+  c.dy = (b.bh - sl.h) / 2 - cr.y * b.bh;
+  c.crop = { x: r4(cr.x), y: r4(cr.y), s: r4(cr.s) };
+}
+
+/* ---------- render ---------- */
+const host = $("#sheetHost"), scaler = $("#scaler"), viewport = $("#viewport");
+let SHEETPX = [];
+let fitScale = 1;
+let hitCells = [];
+
+function renderList() {
+  const q = $("#q").value.trim().toLowerCase();
+  const list = $("#tplList");
+  list.innerHTML = "";
+  let group = null;
+  for (const t of allTpls()) {
+    if (q && !(t.n + " " + t.g + " " + t.w + " " + t.h).toLowerCase().includes(q)) continue;
+    if (t.g !== group) {
+      group = t.g;
+      const h = document.createElement("div");
+      h.className = "grp";
+      h.textContent = group;
+      list.appendChild(h);
+    }
+    const b = document.createElement("button");
+    b.className = "tpl" + (t.id === S.tplId ? " on" : "");
+    b.type = "button";
+    const scale = 22 / Math.max(t.w, t.h);
+    const bw = Math.max(3, t.w * scale), bh = Math.max(3, t.h * scale);
+    b.innerHTML =
+      '<div class="box" style="width:' + bw.toFixed(1) + 'px;height:' + bh.toFixed(1) + 'px" aria-hidden="true"></div>' +
+      '<div class="nm"><span></span><em></em></div>';
+    b.querySelector("span").textContent = t.n;
+    b.querySelector("em").textContent = t.w + " × " + t.h + " mm  ·  " + inOf(t.w) + " × " + inOf(t.h);
+    b.setAttribute("aria-label", "Template " + t.n + ", " + t.w + " times " + t.h + " millimetre");
+    b.addEventListener("click", () => pickTemplate(t.id));
+    list.appendChild(b);
+  }
+  if (!list.children.length) {
+    const d = document.createElement("div");
+    d.style.cssText = "color:var(--sub);padding:10px 4px;font-size:12px";
+    d.textContent = "Kuch nahi mila. Custom size neeche bana lo.";
+    list.appendChild(d);
+  }
+  $("#btnDelCustom").disabled = !tpl().custom;
+}
+
+function pickTemplate(id) {
+  const t = allTpls().find((x) => x.id === id);
+  if (!t) return;
+  snap();
+  S.tplId = id;
+  renderList();
+  S.kind = t.kind === "page" ? "page" : "tile";
+  S.margin = t.kind === "page" ? 0 : 6;
+  ITEMS.forEach((c) => { c.fit = t.fit; c.crop = null; if (!c.srcmm) { c.zoom = 1; c.dx = 0; c.dy = 0; c.rot = 0; c.fine = 0; } });
+  syncControls();
+  render();
+  save();
+}
+
+
+/* ---------- scan fixes (levels / B&W / sharpen / perspective / auto) ---------- */
+function fixDirty(f) {
+  return !!f && (f.bright !== 100 || f.cont !== 100 || f.grey || f.sharp > 0 || !!(f.persp && f.persp.length === 4));
+}
+function cssFilter(f) {
+  let s = "brightness(" + (f.bright || 100) + "%) contrast(" + (f.cont || 100) + "%)";
+  if (f.grey) s += " grayscale(100%)";
+  return s;
+}
+/* 4 normalized corners (tl,tr,br,bl) -> seedha rectangular scan, row-by-row */
+function warpCanvas(c) {
+  const src = c.im, W = src.naturalWidth, H = src.naturalHeight;
+  const pts = c.fix.persp.map((q) => ({ x: q.x * W, y: q.y * H }));
+  const d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  let ow = (d(pts[0], pts[1]) + d(pts[3], pts[2])) / 2;
+  let oh = (d(pts[0], pts[3]) + d(pts[1], pts[2])) / 2;
+  ow = Math.max(16, Math.round(ow)); oh = Math.max(16, Math.round(oh));
+  const cap = Math.min(1, 4000 / Math.max(ow, oh), Math.sqrt(14e6 / (ow * oh)));
+  ow = Math.max(16, Math.round(ow * cap)); oh = Math.max(16, Math.round(oh * cap));
+  const out = document.createElement("canvas");
+  out.width = ow; out.height = oh;
+  const ctx = out.getContext("2d");
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, ow, oh);
+  for (let r = 0; r < oh; r++) {
+    const t = oh === 1 ? 0 : r / (oh - 1);
+    const lx = pts[0].x + (pts[3].x - pts[0].x) * t;
+    const rx = pts[1].x + (pts[2].x - pts[1].x) * t;
+    const ly = pts[0].y + (pts[3].y - pts[0].y) * t;
+    const ry = pts[1].y + (pts[2].y - pts[1].y) * t;
+    const sy = Math.max(0, Math.min(H - 1, (ly + ry) / 2));
+    const sw = Math.max(1, rx - lx);
+    if (sw < 1 || lx < 0) continue;
+    try { ctx.drawImage(src, lx, sy, Math.min(sw, W - lx), 1, 0, r, ow, 1); } catch {}
+  }
+  return out;
+}
+function sharpenCanvas(canvas, amt) {
+  const w = canvas.width, h = canvas.height;
+  if (w * h > 14e6) return;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  let im;
+  try { im = ctx.getImageData(0, 0, w, h); } catch { return; }
+  const a = im.data, out = new Uint8ClampedArray(a.length);
+  const k = amt * 1.6;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      for (let ch = 0; ch < 3; ch++) {
+        const idx = i + ch;
+        const up = y ? a[idx - w * 4] : a[idx];
+        const dn = y < h - 1 ? a[idx + w * 4] : a[idx];
+        const lf = x ? a[idx - 4] : a[idx];
+        const rt = x < w - 1 ? a[idx + 4] : a[idx];
+        out[idx] = a[idx] + k * (4 * a[idx] - up - dn - lf - rt) / 4;
+      }
+      out[i + 3] = a[i + 3];
+    }
+  }
+  out.forEach; // no-op guard for older engines
+  const ni = new ImageData(out, w, h);
+  ctx.putImageData(ni, 0, 0);
+}
+function applyFix(c, quiet) {
+  if (!c || !c.im) return;
+  if (!fixDirty(c.fix)) {
+    if (c.furl) { URL.revokeObjectURL(c.furl); c.furl = null; }
+    c.fim = null;
+    $("#fixNote").textContent = "Abhi koi fix nahi — original image print hogi.";
+    return;
+  }
+  let canvas;
+  try {
+    if (c.fix.persp && c.fix.persp.length === 4) {
+      canvas = warpCanvas(c);
+      const ctx = canvas.getContext("2d");
+      const tmp = document.createElement("canvas");
+      tmp.width = canvas.width; tmp.height = canvas.height;
+      const tc = tmp.getContext("2d");
+      tc.filter = cssFilter(c.fix);
+      tc.drawImage(canvas, 0, 0);
+      canvas = tmp;
+    } else {
+      canvas = document.createElement("canvas");
+      canvas.width = c.im.naturalWidth; canvas.height = c.im.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.filter = cssFilter(c.fix);
+      ctx.drawImage(c.im, 0, 0);
+      ctx.filter = "none";
+    }
+    if (c.fix.sharp > 0) sharpenCanvas(canvas, c.fix.sharp / 100);
+  } catch (e) {
+    $("#fixNote").textContent = "Fix lagane me dikkat: " + String((e && e.message) || e).slice(0, 80);
+    return;
+  }
+  try {
+    canvas.toBlob((b) => {
+      if (!b) return;
+      const u = URL.createObjectURL(b);
+      const im = new Image();
+      im.onload = () => {
+        if (c.furl) URL.revokeObjectURL(c.furl);
+        c.fim = im; c.furl = u;
+        $("#fixNote").textContent = "Fix lag gaya — print aur PNG me bhi yahi dikhega.";
+        render(); save();
+      };
+      im.src = u;
+    }, "image/png");
+  } catch (e) {}
+}
+function scheduleFix() {
+  clearTimeout(scheduleFix._t);
+  scheduleFix._t = setTimeout(() => { const c = cur(); if (c) applyFix(c); }, 260);
+}
+
+/* auto: levels + safed border kaatna */
+function autoFix(c) {
+  if (!c || !c.im) return;
+  const src = EIMG(c) || c.im;
+  const w = Math.min(600, src.naturalWidth), h = Math.max(1, Math.round(src.naturalHeight * w / src.naturalWidth));
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const ctx = cv.getContext("2d", { willReadFrequently: true });
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+  try { ctx.drawImage(src, 0, 0, w, h); } catch { return; }
+  let d;
+  try { d = ctx.getImageData(0, 0, w, h).data; } catch { return; }
+  const hist = new Uint32Array(256);
+  const rowLum = new Float64Array(h), colLum = new Float64Array(w);
+  for (let y = 0; y < h; y++) {
+    let rs = 0;
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const l = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0;
+      hist[l]++; rs += l; colLum[x] += l;
+    }
+    rowLum[y] = rs / w;
+  }
+  const total = w * h;
+  let lo = 0, hi = 255, acc = 0;
+  for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc > total * 0.01) { lo = i; break; } }
+  acc = 0;
+  for (let i = 255; i >= 0; i--) { acc += hist[i]; if (acc > total * 0.01) { hi = i; break; } }
+  const mid = Math.max(1, (lo + hi) / 2), rng = Math.max(20, hi - lo);
+  c.fix.bright = Math.min(180, Math.max(60, Math.round(100 * 128 / mid)));
+  c.fix.cont = Math.min(200, Math.max(60, Math.round(100 * 240 / rng)));
+  /* content box: jo rows/cols average me 235 se upar hain unhe safed maan lo */
+  const isW = (v) => v > 236;
+  let y0 = 0, y1 = h - 1, x0 = 0, x1 = w - 1;
+  while (y0 < y1 && isW(rowLum[y0])) y0++;
+  while (y1 > y0 && isW(rowLum[y1])) y1--;
+  while (x0 < x1 && isW(colLum[x0] / h)) x0++;
+  while (x1 > x0 && isW(colLum[x1] / h)) x1--;
+  const pad = 0.006;
+  let bx = x0 / w + pad, by = y0 / h + pad, bw2 = (x1 - x0) / w - 2 * pad, bh2 = (y1 - y0) / h - 2 * pad;
+  if (bw2 > 0.12 && bh2 > 0.12) {
+    const sl = slotMM(sheetMM());
+    const ca = cropAspect(c, sl);
+    let s = Math.min(1, Math.max(bw2, bh2 / ca));
+    const rot = ((c.rot % 360) + 360) % 360;
+    let X = bx, Y = by, W = bw2, Hh = bh2;
+    if (rot === 90) { const nx = 1 - (Y + Hh), ny = X; X = nx; Y = ny; W = Hh; Hh = bw2; }
+    else if (rot === 180) { X = 1 - (X + W); Y = 1 - (Y + Hh); }
+    else if (rot === 270) { const nx = Y, ny = 1 - (X + W); X = nx; Y = ny; W = Hh; Hh = bw2; }
+    let cx = X + W / 2, cy = Y + Hh / 2;
+    s = Math.max(0.05, Math.min(1, s));
+    const x = Math.max(0, Math.min(1 - s, cx - s / 2));
+    const yv = Math.max(0, Math.min(1 - s * ca, cy - (s * ca) / 2));
+    setCrop(c, { x, y: yv, s }, sl);
+  }
+  $("#fixNote").textContent = "Auto theek: levels = " + c.fix.bright + "% / " + c.fix.cont + "%, safed border kaata gaya.";
+}
+
+/* ---------- layout plan ---------- */
+function placements() {
+  const out = [];
+  if (!ITEMS.length) return out;
+  const copies = Math.max(1, S.copies | 0);
+  if (S.booklet) { for (let i = 0; i < ITEMS.length; i++) out.push(i); return out; }
+  if (S.kind === "tile" && !S.tileEach) {
+    const i = Math.min(sel, ITEMS.length - 1);
+    for (let k = 0; k < copies; k++) out.push(i);
+    return out;
+  }
+  for (let i = 0; i < ITEMS.length; i++) for (let k = 0; k < copies; k++) out.push(i);
+  return out;
+}
+function planSheets() {
+  const sh = sheetMM(), sl = slotMM(sh), g = grid(sh, sl), per = cellsPerSheet(sh, sl, g);
+  const pl = placements();
+  const sheets = [];
+  if (S.booklet) {
+    const list = pl.slice();
+    if (list.length % 2) list.push(-1);
+    const K = list.length / 2;
+    for (let t = 0; t < K; t++) sheets.push([list[list.length - 1 - t], list[t]]);
+  } else if (S.kind === "tile" && S.tileEach) {
+    let run = [], last = -2;
+    for (const i of pl) {
+      if (run.length && (last !== i || run.length >= per)) { sheets.push(run); run = []; }
+      run.push(i); last = i;
+    }
+    if (run.length) sheets.push(run);
+  } else {
+    let run = [];
+    for (const i of pl) {
+      if (run.length >= Math.max(1, per)) { sheets.push(run); run = []; }
+      run.push(i);
+    }
+    if (run.length) sheets.push(run);
+  }
+  if (!sheets.length) sheets.push([]);
+  return { sh, sl, g, per, sheets };
+}
+function cellXY(p, i) {
+  if (S.booklet) {
+    const blockW = 2 * p.sl.w + S.gap;
+    const x0 = (p.sh.w - blockW) / 2;
+    return { x: x0 + i * (p.sl.w + S.gap), y: (p.sh.h - p.sl.h) / 2 };
+  }
+  if (S.kind === "nup") {
+    const n = NUP[S.nup] || NUP[1];
+    const col = i % n.c, row = (i / n.c) | 0;
+    const blockW = n.c * p.sl.w + (n.c - 1) * S.gap;
+    const blockH = n.r * p.sl.h + (n.r - 1) * S.gap;
+    return { x: (p.sh.w - blockW) / 2 + col * (p.sl.w + S.gap), y: (p.sh.h - blockH) / 2 + row * (p.sl.h + S.gap) };
+  }
+  if (S.kind === "page") return { x: S.margin, y: S.margin };
+  const col = i % Math.max(1, p.g.cols), row = (i / Math.max(1, p.g.cols)) | 0;
+  return { x: p.g.x0 + col * (p.sl.w + S.gap), y: p.g.y0 + row * (p.sl.h + S.gap) };
+}
+
+/* ---------- sheet DOM ---------- */
+function photoEl(c, b, sl) {
+  const ph = document.createElement("div");
+  const left = (sl.w - b.bw) / 2 + c.dx, top = (sl.h - b.bh) / 2 + c.dy;
+  const ang = b.rot + b.fine;
+  ph.className = "ph";
+  ph.style.cssText = "left:" + mm(left) + ";top:" + mm(top) + ";width:" + mm(b.bw) + ";height:" + mm(b.bh) +
+                     (ang ? ";transform:rotate(" + ang + "deg)" : "");
+  const im = document.createElement("img");
+  im.src = c.furl || c.url;
+  im.alt = c.name || "";
+  im.draggable = false;
+  if (b.rot % 180 !== 0) {
+    im.style.cssText = "position:absolute;left:" + mm((b.bw - b.bh) / 2) + ";top:" + mm((b.bh - b.bw) / 2) +
+                       ";width:" + mm(b.bh) + ";height:" + mm(b.bw);
+  } else {
+    im.style.cssText = "width:100%;height:100%";
+  }
+  ph.appendChild(im);
+  return ph;
+}
+function addMarks(sheetEl, xy, sl) {
+  const L = 5, O = 1.2;
+  const corners = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+  for (const [sx, sy] of corners) {
+    const m = document.createElement("div");
+    m.className = "mk";
+    m.style.cssText = "left:" + mm(sx < 0 ? xy.x - L - O : xy.x + sl.w + O) + ";top:" + mm(sy < 0 ? xy.y - L - O : xy.y + sl.h + O) + ";width:" + mm(L) + ";height:" + mm(L);
+    const v = document.createElement("i");
+    v.style.cssText = (sx < 0 ? "right:0;" : "left:0;") + "top:0;width:.25mm;height:100%";
+    const h = document.createElement("i");
+    h.style.cssText = "left:0;" + (sy < 0 ? "bottom:0;" : "top:0;") + "width:100%;height:.25mm";
+    m.appendChild(v); m.appendChild(h);
+    sheetEl.appendChild(m);
+  }
+}
+function renderSheets(p) {
+  $("#pageRule").textContent = "@page{size:" + mm(p.sh.w) + " " + mm(p.sh.h) + ";margin:0}";
+  host.innerHTML = "";
+  SHEETPX = []; hitCells = [];
+  const selIdx = ITEMS.length ? Math.min(sel, ITEMS.length - 1) : -1;
+  p.sheets.forEach((items, si) => {
+    const d = document.createElement("div");
+    d.className = "sheet";
+    d.style.width = mm(p.sh.w);
+    d.style.height = mm(p.sh.h);
+    d.style.setProperty("--calx", String(S.calX));
+    d.style.setProperty("--caly", String(S.calY));
+    if (S.duplex === "odd" && si % 2 === 1) d.classList.add("noPrint");
+    if (S.duplex === "even" && si % 2 === 0) d.classList.add("noPrint");
+    if (selIdx >= 0) d.classList.add("hasImage");
+
+    if (!ITEMS.length) {
+      const e = document.createElement("div");
+      e.className = "empty";
+      e.innerHTML = "<b>Photo / PDF add karo</b><div style='font-size:12px'>Left side se template chuno, phir upar “Add photo / PDF”<br>ya file yahan drag-drop / Ctrl+V paste karo</div>";
+      d.appendChild(e);
+    }
+
+    items.forEach((itIdx, cell) => {
+      if (itIdx < 0) return;
+      const c = ITEMS[itIdx];
+      if (!c || !EIMG(c)) return;
+      const xy = cellXY(p, cell);
+      const slot = document.createElement("div");
+      let cls = "slot";
+      if (S.cut === "dash" && S.kind !== "page") cls += " cut";
+      if (S.cut === "marks" && S.kind !== "page") cls += " marks";
+      if (itIdx === selIdx) cls += " sel";
+      slot.className = cls;
+      slot.dataset.item = String(itIdx);
+      slot.style.cssText = "left:" + mm(xy.x) + ";top:" + mm(xy.y) + ";width:" + mm(p.sl.w) + ";height:" + mm(p.sl.h);
+      const b = boxFor(c, p.sl);
+      if (b) slot.appendChild(photoEl(c, b, p.sl));
+      d.appendChild(slot);
+      if (S.cut === "marks") addMarks(d, xy, p.sl);
+      hitCells.push({ sheet: si, x: xy.x, y: xy.y, w: p.sl.w, h: p.sl.h, item: itIdx });
+    });
+
+    const lab = document.createElement("div");
+    lab.className = "sheetLabel";
+    lab.textContent = "Page " + (si + 1) + " / " + p.sheets.length + (S.duplex !== "off" && d.classList.contains("noPrint") ? " (skip)" : "");
+    d.appendChild(lab);
+    host.appendChild(d);
+    SHEETPX.push({ w: p.sh.w * PXMM, h: p.sh.h * PXMM });
+  });
+  return p;
+}
+
+function renderInfo(p) {
+  const t = tpl(), c = cur(), im = EIMG(c);
+  $("#nowTpl").innerHTML = "<b>" + esc(t.n) + "</b><br>" + t.w + " × " + t.h + " mm  (" + inOf(t.w) + " × " + inOf(t.h) + ")";
+  $("#pillSheet").textContent = p.sh.label + " · " + r2(p.sh.w) + "×" + r2(p.sh.h) + "mm";
+  $("#pillSlot").textContent = r2(p.sl.w) + " × " + r2(p.sl.h) + " mm";
+  $("#pillCopies").textContent = p.sheets.reduce((a, s) => a + s.filter((x) => x >= 0).length, 0) + (S.kind === "tile" && !S.booklet ? " / " + p.per + " per page" : "");
+  $("#pillPages").textContent = p.sheets.length + (S.duplex !== "off" ? " (print: " + p.sheets.filter((x, i) => S.duplex === "odd" ? i % 2 === 0 : i % 2 === 1).length + ")" : "");
+  $("#pillFile").textContent = ITEMS.length ? (c ? c.name : ITEMS.length + " files") : "no file";
+  $("#copiesMax").textContent = "max " + (S.kind === "page" ? 999 : p.per) + (S.kind === "tile" || S.kind === "page" ? "" : "");
+  $("#btnClear").disabled = !ITEMS.length;
+  $("#btnUndo").disabled = !undoStack.length;
+  $("#rotV").textContent = (((c ? c.rot : 0) % 360 + 360) % 360) + "°";
+  $("#zoomV").textContent = Math.round((c ? c.zoom : 1) * 100) + "%";
+  $("#mCal").textContent = (S.calX * 100).toFixed(1) + "% × " + (S.calY * 100).toFixed(1) + "%";
+
+  const dpiEl = $("#mDpi");
+  const b = c ? boxFor(c, p.sl) : null;
+  if (b) {
+    const d = Math.round(b.dpi);
+    dpiEl.textContent = d + " dpi";
+    dpiEl.className = d >= 250 ? "ok" : d >= 150 ? "low" : "bad";
+    $("#mNat").textContent = im.naturalWidth + " × " + im.naturalHeight + " px";
+    const unrot = (b.rot % 180 !== 0) ? b.bh : b.bw;
+    $("#mBox").textContent = unrot.toFixed(1) + " × " + ((b.rot % 180 !== 0) ? b.bw : b.bh).toFixed(1) + " mm";
+  } else {
+    dpiEl.textContent = "—"; dpiEl.className = "";
+    $("#mNat").textContent = "—"; $("#mBox").textContent = "—";
+  }
+  if (c && c.srcmm) {
+    $("#mAsliRow").style.display = "";
+    $("#mAsli").textContent = r2(c.srcmm.w) + " × " + r2(c.srcmm.h) + " mm" + (b ? "  →  print " + (100 * b.bw / c.srcmm.w).toFixed(0) + "% of asli" : "");
+  } else $("#mAsliRow").style.display = "none";
+
+  const w = [];
+  if (!ITEMS.length) w.push({ t:"Abhi koi file nahi — Add photo / PDF se ek ya kai files daalo.", k:"" });
+  if (b && b.dpi < 120) w.push({ t:"Resolution bahut kam (" + Math.round(b.dpi) + " dpi). Print dhundhli aayegi — 250+ dpi achha hai.", k:"bad" });
+  else if (b && b.dpi < 250) w.push({ t:"Resolution theek-thaak (" + Math.round(b.dpi) + " dpi) — chhote size ke liye chalega.", k:"" });
+  if (S.kind === "tile" && !S.booklet && p.per === 0) w.push({ t:"Is sheet me ek bhi slot nahi samata. Margin/gap kam karo ya sheet badi karo.", k:"bad" });
+  if (S.margin < 4) w.push({ t:"EPSON L3210 kinare ke ~3 mm pe print nahi karta. Margin 5 mm ya zyada rakho.", k:"bad" });
+  if (p.sh.w > 210.5 || p.sh.h > 297.5) w.push({ t:"Sheet A4 se badi hai (" + r2(p.sh.w) + "×" + r2(p.sh.h) + " mm). Printer me wahi paper rakho, warna kat jayegi.", k:"" });
+  if (S.kind === "page" && Math.max(t.w, t.h) < 100) w.push({ t:"Chhote size ke liye “Sheet (copies)” mode zyada reliable hai — kai printers itna chhota custom page size nahi lete.", k:"" });
+  if ((S.kind === "nup" || S.booklet) && Math.abs(p.sl.w - t.w) > 0.6) w.push({ t:(S.booklet ? "Booklet" : "N-up") + " me content sheet ke cell me fit ho raha hai (" + r2(p.sl.w) + "×" + r2(p.sl.h) + " mm), template ke exact " + t.w + "×" + t.h + " mm se " + (p.sl.w > t.w ? "bada" : "chhota") + ". Exact size chahiye to “A4 sheet (copies)” mode use karo.", k:"" });
+  if (b && c && c.fit === "cover") {
+    const ar = im.naturalWidth / im.naturalHeight, sr = p.sl.w / p.sl.h;
+    if (Math.abs(ar - sr) / sr > 0.05) w.push({ t:"Photo ka shape slot se alag hai, thoda crop ho raha hai. Poora dikhana ho to “Whole” chuno.", k:"" });
+  }
+  if (S.booklet && ITEMS.length < 2) w.push({ t:"Booklet ke liye kam se kam 2 page chahiye (files add karo ya “Saare page add karo” dabao).", k:"" });
+  if (S.duplex !== "off") w.push({ t:"Duplex ON: abhi sirf " + (S.duplex === "odd" ? "odd" : "even") + " pages print honge. Print karke paper palto, phir dusra wala chuno.", k:"" });
+  if (matchMedia("(max-width:900px)").matches) w.push({ t:"Phone/tablet se print karke size thoda bigad sakta hai (mobile print dialog “Fit to page” laga deta hai). Exact mm ke liye laptop se print karo, ya print se pehle printer settings me “Actual size / 100%” chuno.", k:"" });
+  if (c && c.fim) w.push({ t:"Scan fix laga hua hai — print me bhi wahi aayega.", k:"good" });
+  $("#warns").innerHTML = w.map((x) => '<div class="warn ' + x.k + '">' + esc(x.t) + "</div>").join("");
+}
+
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+/* ---------- item strip ---------- */
+function renderStrip() {
+  const st = $("#strip");
+  st.innerHTML = "";
+  ITEMS.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "thumb" + (i === sel ? " on" : "");
+    b.type = "button";
+    b.title = c.name + " — click karke select karo";
+    b.setAttribute("aria-label", "File " + (i + 1) + ": " + c.name);
+    const img = document.createElement("img");
+    img.src = c.furl || c.url; img.alt = "";
+    const num = document.createElement("b");
+    num.textContent = String(i + 1);
+    const x = document.createElement("span");
+    x.className = "x"; x.textContent = "×"; x.title = "Ye file hatao";
+    b.appendChild(img); b.appendChild(num); b.appendChild(x);
+    b.addEventListener("click", (e) => {
+      if (e.target === x) { snap(); removeItem(i); pdfSeq++; if (!ITEMS.length) clearPdf(); setPdfNav(true); render(); save(); return; }
+      sel = i;
+      if (c.pdf) { PDF.page = c.pdf.num; $("#pdfLbl").textContent = c.pdf.num + " / " + PDF.count; }
+      syncControls(); render();
+    });
+    st.appendChild(b);
+  });
+  const add = document.createElement("button");
+  add.className = "thumb add"; add.type = "button"; add.textContent = "+";
+  add.title = "Aur file add karo";
+  add.setAttribute("aria-label", "Aur file add karo");
+  add.addEventListener("click", () => $("#file").click());
+  st.appendChild(add);
+  $("#stripHint").style.display = ITEMS.length > 1 ? "" : "none";
+  $("#rowEach").style.display = (S.kind === "tile" && ITEMS.length > 1) || S.kind === "nup" ? "" : "none";
+}
+
+/* ---------- crop panel ---------- */
+let cropDrag = null;
+function renderCrop(p) {
+  const wrap = $("#cropWrap");
+  const c = cur();
+  wrap.classList.remove("persp");
+  if (!c || !EIMG(c)) {
+    wrap.innerHTML = '<div style="color:var(--sub);font-size:11.5px;padding:8px">File add karo, phir yahan crop window dikhega.</div>';
+    return;
+  }
+  if ($("#fDeskew").checked) { renderPersp(wrap, c); return; }
+  const b = boxFor(c, p.sl);
+  if (!b) { wrap.innerHTML = ""; return; }
+  const dispW = Math.min(250, wrap.clientWidth || 250) || 250;
+  const dispH = dispW * b.bh / b.bw;
+  wrap.innerHTML = "";
+  wrap.style.width = "100%";
+  const stage = document.createElement("div");
+  stage.style.cssText = "position:relative;width:" + dispW + "px;height:" + dispH + "px;overflow:hidden;background:#fff";
+  const im = document.createElement("img");
+  im.src = c.furl || c.url; im.alt = ""; im.draggable = false;
+  if (b.rot % 180 !== 0) im.style.cssText = "position:absolute;left:" + ((dispW - dispH) / 2) + "px;top:" + ((dispH - dispW) / 2) + "px;width:" + dispH + "px;height:" + dispW + "px;transform:rotate(" + (b.rot + b.fine) + "deg)";
+  else im.style.cssText = "width:100%;height:100%;display:block" + (b.fine ? ";transform:rotate(" + b.fine + "deg)" : "");
+  stage.appendChild(im);
+  const cr = cropOf(c, p.sl);
+  if (cr) {
+    const win = document.createElement("div");
+    win.className = "cropwin";
+    const hh = cr.s * cropAspect(c, p.sl) * dispH;
+    win.style.cssText = "left:" + (cr.x * dispW) + "px;top:" + (cr.y * dispH) + "px;width:" + (cr.s * dispW) + "px;height:" + hh + "px";
+    const handle = document.createElement("i");
+    win.appendChild(handle);
+    win.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      snap();
+      cropDrag = { mode: e.target === handle ? "size" : "move", x: e.clientX, y: e.clientY, cr: Object.assign({}, cr), dispW, dispH };
+      try { win.setPointerCapture(e.pointerId); } catch {}
+    });
+    win.addEventListener("pointermove", (e) => {
+      if (!cropDrag) return;
+      const dx = (e.clientX - cropDrag.x) / cropDrag.dispW, dy = (e.clientY - cropDrag.y) / cropDrag.dispH;
+      const ca = cropAspect(c, p.sl);
+      if (cropDrag.mode === "move") {
+        const s = cropDrag.cr.s;
+        const nx = Math.max(-s * 0.4, Math.min(1 - s * 0.6, cropDrag.cr.x + dx));
+        const ny = Math.max(-ca * s * 0.4, Math.min(1 - ca * s * 0.6, cropDrag.cr.y + dy));
+        setCrop(c, { x: nx, y: ny, s }, p.sl);
+      } else {
+        const s = Math.max(0.08, Math.min(1.6, cropDrag.cr.s * (1 + dx * 1.6)));
+        setCrop(c, { x: cropDrag.cr.x, y: cropDrag.cr.y, s }, p.sl);
+      }
+      renderSheetsOnly(p);
+    });
+    ["pointerup", "pointercancel"].forEach((ev) => win.addEventListener(ev, () => { if (cropDrag) { cropDrag = null; render(p); save(); } }));
+    stage.appendChild(win);
+    const hint = document.createElement("div");
+    hint.className = "crophint";
+    hint.textContent = Math.round(cr.s * 100) + "%";
+    stage.appendChild(hint);
+  }
+  wrap.appendChild(stage);
+}
+function renderSheetsOnly(p) {
+  renderSheets(p);
+  fitView(p);
+  const c = cur();
+  const b = c ? boxFor(c, p.sl) : null;
+  $("#mBox").textContent = b ? ((b.rot % 180 !== 0 ? b.bh : b.bw).toFixed(1) + " × " + (b.rot % 180 !== 0 ? b.bw : b.bh).toFixed(1) + " mm") : "—";
+  $("#zoomV").textContent = Math.round((c ? c.zoom : 1) * 100) + "%";
+  if (!moveCropWin(c, p)) renderCrop(p);
+}
+// drag ke beech crop panel rebuild mat karo — pointer capture toot jata hai
+function moveCropWin(c, p) {
+  if (!c) return false;
+  const win = $("#cropWrap .cropwin"), hint = $("#cropWrap .crophint");
+  const stage = win && win.parentElement;
+  if (!win || !stage) return false;
+  const cr = cropOf(c, p.sl);
+  if (!cr) return false;
+  const dispW = stage.clientWidth, dispH = stage.clientHeight;
+  if (!dispW || !dispH) return false;
+  win.style.cssText = "left:" + (cr.x * dispW) + "px;top:" + (cr.y * dispH) + "px;width:" + (cr.s * dispW) + "px;height:" + (cr.s * cropAspect(c, p.sl) * dispH) + "px";
+  if (hint) hint.textContent = Math.round(cr.s * 100) + "%";
+  return true;
+}
+
+/* ---------- top level ---------- */
+function render() {
+  const p = renderSheets(planSheets());
+  renderInfo(p);
+  renderStrip();
+  renderCrop(p);
+  fitView(p);
+  return p;
+}
+function renderAll() { render(); }
+
+function fitView(p) {
+  p = p || planSheets();
+  const w = p.sh.w * PXMM, h = p.sh.h * PXMM;
+  const n = Math.max(1, p.sheets.length);
+  const gapPx = 14;
+  const availW = Math.max(80, viewport.clientWidth - 44);
+  const availH = Math.max(80, viewport.clientHeight - 44);
+  const fit = Math.min(1.35, availW / w, availH / (h * n + gapPx * (n - 1)));
+  fitScale = fit;
+  host.style.width = (w * fit) + "px";
+  host.style.height = (h * n * fit + gapPx * (n - 1)) + "px";
+  scaler.style.width = host.style.width;
+  scaler.style.height = host.style.height;
+  host.style.transform = "scale(" + fit + ")";
+}
+
+/* ---------- controls ---------- */
+function syncControls() {
+  const c = cur();
+  $("#zoom").value = c ? c.zoom : 1;
+  $("#fine").value = c ? (c.fine || 0) : 0;
+  $("#fineV").textContent = (c ? (c.fine || 0) : 0).toFixed(1) + "°";
+  $("#copies").value = S.copies;
+  $("#gap").value = S.gap;
+  $("#margin").value = S.margin;
+  $("#sheetSel").value = S.sheet;
+  $("#nupSel").value = String(S.nup);
+  $("#custSW").value = S.sw;
+  $("#custSH").value = S.sh;
+  $("#cutSel").value = S.cut;
+  $("#dupSel").value = S.duplex;
+  $("#booklet").checked = !!S.booklet;
+  $("#tileEach").checked = !!S.tileEach;
+  $("#rowSheet").style.display = S.kind === "page" || S.booklet ? "none" : "";
+  $("#rowCustSheet").style.display = S.sheet === "cust" && S.kind !== "page" && !S.booklet ? "" : "none";
+  $("#rowNup").style.display = S.kind === "nup" && !S.booklet ? "" : "none";
+  $("#rowDuplex").style.display = S.kind === "page" ? "none" : "";
+  $$("#segFit button").forEach((b) => b.classList.toggle("on", c ? b.dataset.v === c.fit : b.dataset.v === S.fit));
+  $$("#segKind button").forEach((b) => b.classList.toggle("on", b.dataset.v === S.kind));
+  if (c) {
+    $("#asliW").value = c.srcmm ? c.srcmm.w : "";
+    $("#asliH").value = c.srcmm ? c.srcmm.h : "";
+    $("#fBright").value = c.fix.bright; $("#fBrightV").textContent = c.fix.bright + "%";
+    $("#fCont").value = c.fix.cont; $("#fContV").textContent = c.fix.cont + "%";
+    $("#fSharp").value = c.fix.sharp; $("#fSharpV").textContent = String(c.fix.sharp);
+    $("#fGrey").checked = !!c.fix.grey;
+    $("#fDeskew").checked = !!(c.fix.persp && c.fix.persp.length === 4);
+  }
+  setPdfNav(!busy);
+}
+
+$("#q").addEventListener("input", renderList);
+$("#sheetSel").addEventListener("change", (e) => { snap(); S.sheet = e.target.value; syncControls(); render(); save(); });
+$("#custSW").addEventListener("input", (e) => { S.sw = Math.max(20, Math.min(1000, parseFloat(e.target.value) || 210)); render(); save(); });
+$("#custSH").addEventListener("input", (e) => { S.sh = Math.max(20, Math.min(1000, parseFloat(e.target.value) || 297)); render(); save(); });
+$("#nupSel").addEventListener("change", (e) => { snap(); S.nup = parseInt(e.target.value, 10) || 1; syncControls(); render(); save(); });
+$("#zoom").addEventListener("input", (e) => { const c = cur(); if (!c) return; c.zoom = Math.min(16, Math.max(0.2, parseFloat(e.target.value) || 1)); c.crop = cropOf(c, slotMM(sheetMM())); render(); save(); });
+$("#fine").addEventListener("input", (e) => { const c = cur(); if (!c) return; c.fine = parseFloat(e.target.value) || 0; render(); save(); });
+$("#copies").addEventListener("input", (e) => { S.copies = Math.max(1, parseInt(e.target.value, 10) || 1); render(); save(); });
+$("#gap").addEventListener("input", (e) => { S.gap = Math.max(0, parseFloat(e.target.value) || 0); render(); save(); });
+$("#margin").addEventListener("input", (e) => { S.margin = Math.max(0, parseFloat(e.target.value) || 0); render(); save(); });
+$("#cutSel").addEventListener("change", (e) => { snap(); S.cut = e.target.value; render(); save(); });
+$("#dupSel").addEventListener("change", (e) => { S.duplex = e.target.value; render(); save(); });
+$("#tileEach").addEventListener("change", (e) => { snap(); S.tileEach = e.target.checked; render(); save(); });
+$("#booklet").addEventListener("change", (e) => { snap(); S.booklet = e.target.checked; if (S.booklet) { S.kind = "nup"; S.nup = 2; } syncControls(); render(); save(); });
+
+$$("#segFit button").forEach((b) => b.addEventListener("click", () => {
+  snap();
+  const f = b.dataset.v;
+  S.fit = f;
+  ITEMS.forEach((c) => { c.fit = f; c.crop = null; if (!c.srcmm) { c.zoom = 1; c.dx = 0; c.dy = 0; } });
+  syncControls(); render(); save();
+}));
+$$("#segKind button").forEach((b) => b.addEventListener("click", () => {
+  snap();
+  S.kind = b.dataset.v;
+  if (S.kind === "page") S.booklet = false;
+  S.margin = b.dataset.v === "page" ? 0 : 6;
+  syncControls(); render(); save();
+}));
+$$("[data-r]").forEach((b) => b.addEventListener("click", () => {
+  const c = cur(); if (!c) return;
+  snap();
+  c.rot = (c.rot + parseInt(b.dataset.r, 10) + 360) % 360;
+  c.crop = cropOf(c, slotMM(sheetMM()));
+  render(); save();
+}));
+$$("[data-n]").forEach((b) => b.addEventListener("click", () => nudge(b.dataset.n, 0.5)));
+function nudge(dir, step) {
+  const c = cur(); if (!c) return;
+  if (dir === "reset") { snap(); c.dx = 0; c.dy = 0; c.zoom = 1; c.crop = null; syncControls(); }
+  else if (dir === "up") c.dy -= step;
+  else if (dir === "down") c.dy += step;
+  else if (dir === "left") c.dx -= step;
+  else if (dir === "right") c.dx += step;
+  c.crop = cropOf(c, slotMM(sheetMM()));
+  render(); save();
+}
+document.addEventListener("keydown", (e) => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
+    if (!((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z")) return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); doUndo(); return; }
+  const step = e.shiftKey ? 2 : 0.5;
+  const map = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
+  if (map[e.key] && cur()) { e.preventDefault(); nudge(map[e.key], step); }
+  else if ((e.key === "+" || e.key === "=") && cur()) { snap(); cur().zoom = Math.min(16, cur().zoom * 1.05); syncControls(); render(); save(); }
+  else if ((e.key === "-" || e.key === "_") && cur()) { snap(); cur().zoom = Math.max(0.2, cur().zoom / 1.05); syncControls(); render(); save(); }
+});
+
+/* crop buttons */
+$("#btnCropAll").addEventListener("click", () => { const c = cur(); if (!c) return; snap(); fitSlot(c); syncControls(); render(); save(); });
+$("#btnCropSquare").addEventListener("click", () => {
+  const c = cur(); if (!c) return;
+  snap();
+  const sl = slotMM(sheetMM());
+  const ca = cropAspect(c, sl);
+  const cr = cropOf(c, sl);
+  if (!cr) return;
+  setCrop(c, { x: (1 - cr.s) / 2, y: (1 - cr.s * ca) / 2, s: cr.s }, sl);
+  syncControls(); render(); save();
+});
+$("#btnCropHalf").addEventListener("click", () => {
+  const c = cur(); if (!c) return;
+  snap();
+  const sl = slotMM(sheetMM());
+  const ca = cropAspect(c, sl);
+  const cr = cropOf(c, sl) || { x: 0.5, y: 0.5, s: 1 };
+  const s = Math.max(0.08, Math.min(1, cr.s / 2));
+  setCrop(c, { x: cr.x + (cr.s - s) / 2, y: cr.y + (cr.s - s) * ca / 2, s }, sl);
+  syncControls(); render(); save();
+});
+
+/* scan fix controls */
+$("#fBright").addEventListener("input", (e) => { const c = cur(); if (!c) return; c.fix.bright = parseInt(e.target.value, 10) || 100; $("#fBrightV").textContent = c.fix.bright + "%"; scheduleFix(); });
+$("#fCont").addEventListener("input", (e) => { const c = cur(); if (!c) return; c.fix.cont = parseInt(e.target.value, 10) || 100; $("#fContV").textContent = c.fix.cont + "%"; scheduleFix(); });
+$("#fSharp").addEventListener("input", (e) => { const c = cur(); if (!c) return; c.fix.sharp = parseInt(e.target.value, 10) || 0; $("#fSharpV").textContent = String(c.fix.sharp); scheduleFix(); });
+$("#fGrey").addEventListener("change", (e) => { const c = cur(); if (!c) return; snap(); c.fix.grey = e.target.checked; applyFix(c); save(); });
+$("#fDeskew").addEventListener("change", (e) => {
+  const c = cur(); if (!c) return;
+  if (e.target.checked) { if (!c.fix.persp) c.fix.persp = [{ x: 0.02, y: 0.02 }, { x: 0.98, y: 0.02 }, { x: 0.98, y: 0.98 }, { x: 0.02, y: 0.98 }]; }
+  else { c.fix.persp = null; applyFix(c); save(); }
+  render();
+});
+$("#btnFixAuto").addEventListener("click", () => { const c = cur(); if (!c) return; snap(); autoFix(c); applyFix(c); syncControls(); render(); save(); });
+$("#btnFixReset").addEventListener("click", () => {
+  const c = cur(); if (!c) return;
+  snap();
+  c.fix = { bright: 100, cont: 100, grey: false, sharp: 0, persp: null };
+  applyFix(c); syncControls(); render(); save();
+});
+
+/* perspective corner drag */
+function renderPersp(wrap, c) {
+  wrap.classList.add("persp");
+  wrap.innerHTML = "";
+  const pts = c.fix.persp || [{ x: .02, y: .02 }, { x: .98, y: .02 }, { x: .98, y: .98 }, { x: .02, y: .98 }];
+  const dispW = Math.min(250, wrap.clientWidth || 250) || 250;
+  const dispH = dispW * c.im.naturalHeight / c.im.naturalWidth;
+  const stage = document.createElement("div");
+  stage.style.cssText = "position:relative;width:" + dispW + "px;height:" + dispH + "px;background:#fff";
+  const im = document.createElement("img");
+  im.src = c.url; im.alt = ""; im.draggable = false;
+  im.style.cssText = "width:100%;height:100%;display:block;opacity:.75";
+  stage.appendChild(im);
+  pts.forEach((q, i) => {
+    const h = document.createElement("div");
+    h.className = "pc";
+    h.title = "Kona " + (i + 1) + " drag karo (tl, tr, br, bl)";
+    h.style.left = (q.x * dispW) + "px";
+    h.style.top = (q.y * dispH) + "px";
+    h.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      snap();
+      const move = (ev) => {
+        const nx = Math.max(0, Math.min(1, (ev.clientX - stage.getBoundingClientRect().left) / dispW));
+        const ny = Math.max(0, Math.min(1, (ev.clientY - stage.getBoundingClientRect().top) / dispH));
+        c.fix.persp[i] = { x: r4(nx), y: r4(ny) };
+        h.style.left = (nx * dispW) + "px"; h.style.top = (ny * dispH) + "px";
+      };
+      const up = () => {
+        document.removeEventListener("pointermove", move);
+        document.removeEventListener("pointerup", up);
+        applyFix(c); save();
+      };
+      document.addEventListener("pointermove", move);
+      document.addEventListener("pointerup", up);
+    });
+    stage.appendChild(h);
+  });
+  wrap.appendChild(stage);
+}
+
+/* calibration */
+$("#btnCalApply").addEventListener("click", () => {
+  const vx = parseFloat($("#calInX").value), vy = parseFloat($("#calInY").value);
+  if (!(vx > 50 && vx < 150) && !(vy > 50 && vy < 150)) { alert("Kam se kam ek naap (mm me) daalo — jaise 98.4"); return; }
+  snap();
+  if (vx > 50 && vx < 150) S.calX = Math.min(1.1, Math.max(0.9, 100 / vx));
+  if (vy > 50 && vy < 150) S.calY = Math.min(1.1, Math.max(0.9, 100 / vy));
+  $("#calInX").value = ""; $("#calInY").value = "";
+  render(); save();
+});
+$("#btnCalReset").addEventListener("click", () => { snap(); S.calX = 1; S.calY = 1; S.cal = 1; render(); save(); });
+
+/* custom templates */
+$("#btnSaveCustom").addEventListener("click", () => {
+  const name = $("#cName").value.trim();
+  const w = parseFloat($("#cW").value), h = parseFloat($("#cH").value);
+  if (!name) { alert("Naam likho (jaise “Mini Aadhaar”)."); return; }
+  if (!(w > 4 && h > 4 && w < 500 && h < 500)) { alert("Size 5 mm se 500 mm ke beech hona chahiye."); return; }
+  snap();
+  const id = "c" + Date.now();
+  S.custom.push({ id, g: "Custom (saved)", n: name, w: Math.round(w * 10) / 10, h: Math.round(h * 10) / 10, kind: "tile", fit: "contain", custom: true });
+  $("#cName").value = "";
+  renderList(); pickTemplate(id);
+});
+$("#btnDelCustom").addEventListener("click", () => {
+  const t = tpl();
+  if (!t.custom) return;
+  snap();
+  S.custom = S.custom.filter((c) => c.id !== t.id);
+  S.tplId = "aadhaar";
+  renderList(); pickTemplate("aadhaar"); save();
+});
+
+/* ---------- file input (multi) ---------- */
+function addImageFile(file) {
+  const url = URL.createObjectURL(file);
+  loadImage(url).then((im) => {
+    const c = addItem(file.name || "pasted image", im, url);
+    const t = tpl();
+    const ar = im.naturalWidth / im.naturalHeight;
+    if (t.kind === "tile" && t.fit === "cover" && ar < 1 && t.w > t.h) c.rot = 90;
+    render(); save();
+  }).catch(() => { URL.revokeObjectURL(url); alert("Ye image load nahi ho payi: " + (file.name || "")); });
+}
+async function setFiles(files) {
+  const list = Array.from(files || []).filter(Boolean);
+  if (!list.length) return;
+  snap();
+  for (const f of list) {
+    const isPdf = f.type === "application/pdf" || /\.pdf$/i.test(f.name || "");
+    if (isPdf) { await openPdf(f); continue; }
+    if (!/^image\//.test(f.type) && !/\.(jpe?g|png|webp|gif|bmp|tiff?)$/i.test(f.name || "")) {
+      alert("Image ya PDF file chuno (JPG / PNG / WEBP / PDF) — ye chhoda: " + (f.name || ""));
+      continue;
+    }
+    addImageFile(f);
+  }
+  syncControls();
+}
+$("#btnPick").addEventListener("click", () => $("#file").click());
+$("#file").addEventListener("change", (e) => { setFiles(e.target.files); e.target.value = ""; });
+$("#btnClear").addEventListener("click", () => {
+  snap();
+  removeItem(sel);
+  pdfSeq++;
+  if (!ITEMS.length) clearPdf();
+  setPdfNav(true);
+  syncControls(); render(); save();
+});
+["dragenter", "dragover"].forEach((ev) => document.addEventListener(ev, (e) => {
+  if (!e.dataTransfer) return;
+  e.preventDefault(); $("#drop").classList.add("on");
+}));
+["dragleave", "drop"].forEach((ev) => document.addEventListener(ev, (e) => {
+  e.preventDefault();
+  if (ev === "dragleave" && e.relatedTarget) return;
+  $("#drop").classList.remove("on");
+}));
+document.addEventListener("drop", (e) => {
+  const files = e.dataTransfer && e.dataTransfer.files;
+  if (files && files.length) setFiles(files);
+});
+document.addEventListener("paste", (e) => {
+  const items = (e.clipboardData || {}).items || [];
+  const fs = [];
+  for (const it of items) if (it.kind === "file") { const f = it.getAsFile(); if (f) fs.push(f); }
+  if (!fs.length) {
+    const f = e.clipboardData && e.clipboardData.files && e.clipboardData.files[0];
+    if (f) fs.push(f);
+  }
+  if (fs.length) { e.preventDefault(); setFiles(fs); }
+});
+
+/* ---------- drag item inside its slot ---------- */
+let drag = null;
+host.addEventListener("pointerdown", (e) => {
+  const c = hitItem(e);
+  if (!c || !c.item) return;
+  sel = c.idx;
+  drag = { x: e.clientX, y: e.clientY, dx: c.item.dx, dy: c.item.dy, cell: c.cell, snapped: false };
+  try { host.setPointerCapture(e.pointerId); } catch {}
+  $$(".slot", host).forEach((s) => s.classList.remove("sel"));
+  $$(".slot", host).filter((s) => s.dataset.item == String(c.idx)).forEach((s) => s.classList.add("sel"));
+  renderStrip();
+});
+host.addEventListener("pointermove", (e) => {
+  if (!drag) return;
+  const cell = drag.cell;
+  const item = ITEMS[cell.item];
+  if (!item) return;
+  if (!drag.snapped) { drag.snapped = true; snap(); }
+  item.dx = drag.dx + (e.clientX - drag.x) / (PXMM * fitScale);
+  item.dy = drag.dy + (e.clientY - drag.y) / (PXMM * fitScale);
+  item.crop = cropOf(item, { w: cell.w, h: cell.h });
+  const p = planSheets();
+  renderSheetsOnly(p);
+});
+["pointerup", "pointercancel"].forEach((ev) => host.addEventListener(ev, () => { if (drag) { drag = null; save(); render(); } }));
+function hitItem(e) {
+  const sheets = Array.from(host.children);
+  for (let si = 0; si < sheets.length; si++) {
+    const el = sheets[si];
+    const r = el.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) continue;
+    const xmm = (e.clientX - r.left) / PXMM / fitScale;
+    const ymm = (e.clientY - r.top) / PXMM / fitScale;
+    for (const cell of hitCells) {
+      if (cell.sheet !== si) continue;
+      if (xmm >= cell.x && xmm <= cell.x + cell.w && ymm >= cell.y && ymm <= cell.y + cell.h) {
+        return { idx: cell.item, item: ITEMS[cell.item], cell };
+      }
+    }
+    return null;
+  }
+  return null;
+}
+
+/* ---------- printing ---------- */
+function doPrint() {
+  if (!ITEMS.length) { alert("Pehle ek photo/document chuno."); return; }
+  window.print();
+}
+$("#btnPrint").addEventListener("click", doPrint);
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") { e.preventDefault(); doPrint(); }
+});
+$("#btnRuler").addEventListener("click", () => {
+  document.body.classList.add("calprint");
+  $("#pageRule").textContent = "@page{size:210mm 297mm;margin:0}"; // ruler hamesha A4 pe
+  window.print();
+});
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("calprint");
+  render(); // @page wapas current sheet ka
+});
+
+/* ---------- job save / load / PNG ---------- */
+function download(blob, name) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+}
+$("#btnSaveJob").addEventListener("click", () => {
+  const d = { app: "print-studio", v: 1, sheet: sheetMM().label, S: {}, geo: ITEMS.map(geoOf), files: ITEMS.map((c) => c.name) };
+  for (const k of SKEYS) d.S[k] = S[k];
+  download(new Blob([JSON.stringify(d, null, 1)], { type: "application/json" }), "printjob.json");
+  toast("Job file download ho gayi (printjob.json). Files baad me isi naam se add karni hongi.", "good");
+});
+$("#btnLoadJob").addEventListener("click", () => $("#jobFile").click());
+$("#jobFile").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      if (!d || !d.S) throw new Error("Ye Print Studio ki job file nahi lagti.");
+      snap();
+      for (const k of SKEYS) if (k in d.S) S[k] = d.S[k];
+      if (Array.isArray(d.custom)) S.custom = d.custom;
+      savedGeo = Array.isArray(d.geo) ? d.geo : [];
+      if (Array.isArray(d.files) && d.files.length) $("#stripHint").textContent = "Job load hui — ab files isi kram me add karo: " + d.files.join(", ");
+      renderList(); syncControls(); render(); save();
+      toast("Job load ho gayi. Ab files add karo — layout/apni jagah apne aap set ho jayega.", "good");
+    } catch (err) {
+      alert("Job file padhi nahi ja payi: " + String((err && err.message) || err));
+    }
+  };
+  rd.readAsText(f);
+});
+$("#btnUndo").addEventListener("click", doUndo);
+$("#btnPng").addEventListener("click", () => {
+  if (!ITEMS.length) { alert("Pehle file add karo."); return; }
+  const p = planSheets();
+  const k = 300 / 25.4;
+  p.sheets.forEach((items, si) => {
+    const cv = document.createElement("canvas");
+    cv.width = Math.round(p.sh.w * k);
+    cv.height = Math.round(p.sh.h * k);
+    const ctx = cv.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    items.forEach((itIdx, cell) => {
+      if (itIdx < 0) return;
+      const c = ITEMS[itIdx], im = EIMG(c);
+      if (!im) return;
+      const xy = cellXY(p, cell), b = boxFor(c, p.sl);
+      if (!b) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(xy.x * k, xy.y * k, p.sl.w * k, p.sl.h * k);
+      ctx.clip();
+      const cx = (xy.x + p.sl.w / 2 + c.dx) * k, cy = (xy.y + p.sl.h / 2 + c.dy) * k;
+      ctx.translate(cx, cy);
+      ctx.rotate((b.rot + b.fine) * Math.PI / 180);
+      if (b.rot % 180 !== 0) ctx.drawImage(im, (b.bw - b.bh) * k / 2, (b.bh - b.bw) * k / 2, b.bh * k, b.bw * k);
+      else ctx.drawImage(im, -b.bw * k / 2, -b.bh * k / 2, b.bw * k, b.bh * k);
+      ctx.restore();
+    });
+    cv.toBlob((blob) => { if (blob) download(blob, "print-studio-page" + (si + 1) + ".png"); }, "image/png");
+  });
+  toast("PNG export ho raha hai (" + p.sheets.length + " page, 300 dpi).", "good");
+});
+
+/* calibration ruler ticks */
+(function ticks() {
+  const box = $("#calBox");
+  for (let i = 1; i < 10; i++) {
+    const v = document.createElement("div");
+    v.className = "calTick";
+    v.style.cssText = "left:" + (i * 10) + "mm;top:0;width:.3mm;height:4mm";
+    const h = document.createElement("div");
+    h.className = "calTick";
+    h.style.cssText = "left:0;top:" + (i * 10) + "mm;width:4mm;height:.3mm";
+    box.appendChild(v); box.appendChild(h);
+  }
+})();
+
+/* manual asli size (photo ke liye) */
+$("#btnAsliApply").addEventListener("click", () => {
+  const c = cur(); if (!c) return;
+  const w = parseFloat($("#asliW").value), h = parseFloat($("#asliH").value);
+  if (!(w > 3 && h > 3)) { alert("Asli size mm me daalo (jaise 85.6 × 54)."); return; }
+  snap();
+  c.srcmm = { w: Math.round(w * 10) / 10, h: Math.round(h * 10) / 10 };
+  realSize(c, false);
+  syncControls(); render(); save();
+});
+
+/* ---------- init ---------- */
+window.addEventListener("resize", () => render());
+load();
+if (!allTpls().find((t) => t.id === S.tplId)) S.tplId = "aadhaar";
+if (!SHEETS.find((s) => s.id === S.sheet)) S.sheet = "a4";
+if (!NUP[S.nup]) S.nup = 1;
+renderList();
+syncControls();
+render();
+</script>
+</body>
+</html>
