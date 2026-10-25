@@ -68,6 +68,19 @@
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
           "url": "https://aman-sys-code.github.io/aman-apps/apps/khoj/"
         }
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "item": {
+          "@type": "SoftwareApplication",
+          "name": "AMAN Search",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": "Web",
+          "description": "The classic AMAN workspace with AI chat and source-backed web search, kept online as an earlier build.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+          "url": "https://dazzling-daffodil-7eb85a.netlify.app/aman-search/"
+        }
       }
     ]
   }
@@ -142,7 +155,7 @@
         <p class="index-label">01 / The collection</p>
         <div>
           <h2>Apps &amp; experiments</h2>
-          <p>Four published, one still in the lab. Everything here is free, and none of it needs an account.</p>
+          <p>Five apps, all live. Everything here is free, and none of it needs an account.</p>
         </div>
       </header>
 
@@ -250,17 +263,23 @@
           </div>
         </article>
 
-        <article class="app-card app-card-lab reveal">
+        <article class="app-card reveal" style="--accent:#f08bb8">
           <div class="card-top">
             <span class="glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/></svg>
             </span>
-            <span class="card-index">Lab</span>
+            <span class="card-index">05</span>
           </div>
           <h3>AMAN Search</h3>
-          <p>The older local build that AMAN OS grew out of. It needs a local Node server and API keys, so it is not published here.</p>
-          <ul class="chips"><li>Not published</li><li>Local only</li></ul>
-          <p class="lab-note">Kept as a reference build. AMAN OS is the version to use.</p>
+          <p>The classic AMAN build that AMAN OS grew out of: AI chat plus source-backed web search in one workspace, now live again on the same backend.</p>
+          <ul class="chips"><li>Live</li><li>Web search</li><li>Classic build</li></ul>
+          <div class="card-actions">
+            <a class="btn btn-small" href="aman-search/" target="_blank" rel="noopener">
+              Open AMAN Search
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4 10 14M18 14v6H4V6h6"/></svg>
+            </a>
+          </div>
+          <p class="lab-note">AMAN OS is the newer workspace. This is the earlier interface, kept online.</p>
         </article>
       </div>
     </section>
